@@ -68,3 +68,5 @@ count.txt
 
 # New .output directory
 .output
+
+*.db
