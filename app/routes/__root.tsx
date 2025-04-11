@@ -5,6 +5,7 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import CSS from '../styles.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -26,6 +27,10 @@ export const Route = createRootRoute({
         type: 'image/svg+xml',
         sizes: 'any',
         href: '/favicon.svg',
+      },
+      {
+        rel: 'stylesheet',
+        href: CSS,
       },
     ],
   }),
