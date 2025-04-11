@@ -1,0 +1,25 @@
+{
+  "name": "vegkart-mikro",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "vinxi dev",
+    "build": "vinxi build",
+    "start": "vinxi start"
+  },
+  "devDependencies": {
+    "@types/bun": "1.2.9",
+    "@types/react": "19.1.1",
+    "@types/react-dom": "19.1.2",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.8.3",
+    "vite-tsconfig-paths": "5.1.4"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "1.115.3",
+    "@tanstack/react-start": "1.115.3",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "vinxi": "0.5.4"
+  }
+}
