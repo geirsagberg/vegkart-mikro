@@ -1,18 +1,10 @@
 import * as duckdb from 'duckdb'
 
-let db: duckdb.Database | null = null
+const db = new duckdb.Database(':memory:')
 
-export function getDB() {
-  if (!db) {
-    db = new duckdb.Database(':memory:')
-  }
-  return db
-}
-
-export async function query(sql: string): Promise<duckdb.TableData> {
-  const db = getDB()
+export async function query(sql: string) {
   return new Promise((resolve, reject) => {
-    db.all(sql, (err: Error | null, res: duckdb.TableData) => {
+    db.all(sql, (err, res) => {
       if (err) reject(err)
       else resolve(res)
     })
