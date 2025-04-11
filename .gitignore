@@ -65,3 +65,6 @@ pnpm-debug.log*
 # Generated files
 app/routeTree.gen.ts
 count.txt
+
+# New .output directory
+.output
