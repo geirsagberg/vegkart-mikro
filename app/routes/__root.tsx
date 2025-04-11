@@ -47,11 +47,11 @@ function RootComponent() {
 
 function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-theme="light">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-screen bg-base-100">
         {children}
         <Scripts />
       </body>
