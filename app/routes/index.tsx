@@ -1,8 +1,9 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
 import * as fs from 'node:fs'
+import * as path from 'node:path'
 
-const filePath = 'count.txt'
+const filePath = path.join(process.cwd(), 'count.txt')
 
 async function readCount() {
   return parseInt(

@@ -8,5 +8,11 @@ export default defineConfig({
         projects: ['./tsconfig.json'],
       }),
     ],
+    optimizeDeps: {
+      exclude: ['duckdb', '@mapbox/node-pre-gyp'],
+    },
+    ssr: {
+      noExternal: ['duckdb', '@mapbox/node-pre-gyp'],
+    },
   },
 })
