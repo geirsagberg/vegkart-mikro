@@ -18,7 +18,7 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Vegkart Mikro',
       },
     ],
     links: [
@@ -31,6 +31,10 @@ export const Route = createRootRoute({
       {
         rel: 'stylesheet',
         href: CSS,
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://cdn.jsdelivr.net/npm/ol/ol.css',
       },
     ],
   }),
