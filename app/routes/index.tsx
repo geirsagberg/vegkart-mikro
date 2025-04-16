@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import type { MapRef } from '../components/Map'
 import { VegkartMap } from '../components/Map'
 import { getSyncState, syncVeglenker } from '../db/sync'
 
@@ -18,6 +19,8 @@ function Home() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null)
   const [currentId, setCurrentId] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const mapRef = useRef<MapRef>(null)
 
   useEffect(() => {
     loadSyncStatus()
@@ -68,11 +71,24 @@ function Home() {
     }
   }
 
+  const handleDrawVeglenker = async () => {
+    if (!mapRef.current) return
+    setIsLoading(true)
+    try {
+      await mapRef.current.drawVeglenkerInView()
+    } catch (error) {
+      console.error('Failed to draw veglenker:', error)
+      setError(error instanceof Error ? error.message : 'Unknown error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <div className="flex flex-col h-screen">
-      <div className="bg-base-200 p-4 shadow-md">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Vegkart Mikro</h1>
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Vegkart Mikro</h1>
           <div className="flex items-center gap-4">
             {syncStatus && (
               <div className="text-sm">
@@ -97,12 +113,19 @@ function Home() {
             >
               {isSyncing ? 'Syncing...' : 'Synkroniser veglenkesekvenser'}
             </button>
+            <button
+              onClick={handleDrawVeglenker}
+              disabled={isLoading}
+              className="btn btn-primary"
+            >
+              {isLoading ? 'Loading...' : 'Draw Veglenker'}
+            </button>
           </div>
         </div>
-      </div>
-      <div className="flex-1">
-        <VegkartMap />
-      </div>
+      </header>
+      <main className="flex-1">
+        <VegkartMap ref={mapRef} />
+      </main>
     </div>
   )
 }

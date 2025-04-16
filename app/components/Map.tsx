@@ -1,13 +1,17 @@
+import { Feature } from 'ol'
 import Map from 'ol/Map'
 import View from 'ol/View'
+import { LineString } from 'ol/geom'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
 import { get as getProjection, transform } from 'ol/proj'
 import { register } from 'ol/proj/proj4'
 import OSM from 'ol/source/OSM'
 import VectorSource from 'ol/source/Vector'
+import { Stroke, Style } from 'ol/style'
 import proj4 from 'proj4'
-import { useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { queryVeglenker } from '../db/sync'
 
 // Register EPSG:25833 (ETRS89 / UTM zone 33N)
 proj4.defs(
@@ -19,14 +23,64 @@ register(proj4)
 // Kristiansand coordinates in WGS84 (EPSG:4326)
 const KRISTIANSAND_COORDS = [8.0187, 58.1464]
 
-const vectorSource = new VectorSource()
-const vectorLayer = new VectorLayer({
-  source: vectorSource,
-})
+export interface MapRef {
+  drawVeglenkerInView: () => Promise<void>
+}
 
-export function VegkartMap() {
+export const VegkartMap = forwardRef<MapRef>((_, ref) => {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<Map | null>(null)
+  const vectorSource = useRef(new VectorSource())
+  const vectorLayer = useRef(
+    new VectorLayer({
+      source: vectorSource.current,
+      style: new Style({
+        stroke: new Stroke({
+          color: '#ff0000',
+          width: 2,
+        }),
+      }),
+    }),
+  )
+
+  useImperativeHandle(ref, () => ({
+    drawVeglenkerInView: async () => {
+      if (!mapInstance.current) return
+
+      const map = mapInstance.current
+      const extent = map.getView().calculateExtent()
+      if (!extent) return
+
+      console.log('extent', extent)
+
+      try {
+        const result = await queryVeglenker({
+          data: {
+            minX: extent[0]!,
+            minY: extent[1]!,
+            maxX: extent[2]!,
+            maxY: extent[3]!,
+          },
+        })
+        vectorSource.current.clear()
+
+        console.log('result', result)
+
+        result.features.forEach((feature) => {
+          if (feature.geometry) {
+            const olFeature = new Feature({
+              geometry: new LineString(feature.geometry.coordinates),
+              ...feature.properties,
+            })
+            vectorSource.current.addFeature(olFeature)
+          }
+        })
+      } catch (error) {
+        console.error('Error loading veglenker:', error)
+        throw error
+      }
+    },
+  }))
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return
@@ -48,11 +102,11 @@ export function VegkartMap() {
         new TileLayer({
           source: new OSM(),
         }),
-        vectorLayer,
+        vectorLayer.current,
       ],
       view: new View({
         center: kristiansandUTM,
-        zoom: 12,
+        zoom: 8,
         projection: 'EPSG:25833',
       }),
     })
@@ -83,4 +137,4 @@ export function VegkartMap() {
   })
 
   return <div ref={mapRef} className="w-full h-full" />
-}
+})
