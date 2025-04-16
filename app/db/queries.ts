@@ -14,16 +14,7 @@ const GeoJSONLineString = z.object({
 
 const GeoJSONVeglenkeFeature = z.object({
   type: z.literal('Feature'),
-  geometry: z.union([
-    z.object({
-      type: z.literal('Point'),
-      coordinates: z.tuple([z.number(), z.number()]),
-    }),
-    z.object({
-      type: z.literal('LineString'),
-      coordinates: z.array(z.tuple([z.number(), z.number()])),
-    }),
-  ]),
+  geometry: z.union([GeoJSONPoint, GeoJSONLineString]),
   properties: z.object({
     veglenkesekvensId: z.number(),
     veglenkenummer: z.number(),
