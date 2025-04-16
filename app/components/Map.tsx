@@ -1,9 +1,8 @@
-import { Feature } from 'ol'
 import Map from 'ol/Map'
 import Overlay from 'ol/Overlay'
 import View from 'ol/View'
 import { pointerMove } from 'ol/events/condition'
-import { LineString } from 'ol/geom'
+import { GeoJSON } from 'ol/format'
 import Select from 'ol/interaction/Select'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
@@ -11,7 +10,7 @@ import { get as getProjection, transform } from 'ol/proj'
 import { register } from 'ol/proj/proj4'
 import OSM from 'ol/source/OSM'
 import VectorSource from 'ol/source/Vector'
-import { Stroke, Style } from 'ol/style'
+import { Circle, Fill, Stroke, Style } from 'ol/style'
 import proj4 from 'proj4'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { queryVeglenker } from '../db/queries'
@@ -26,6 +25,8 @@ register(proj4)
 // Kristiansand coordinates in WGS84 (EPSG:4326)
 const KRISTIANSAND_COORDS = [8.0187, 58.1464]
 
+const FEATURE_THRESHOLD = 10000
+
 export interface MapRef {
   drawVeglenkerInView: () => Promise<void>
 }
@@ -39,12 +40,23 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
   const vectorLayer = useRef(
     new VectorLayer({
       source: vectorSource.current,
-      style: new Style({
-        stroke: new Stroke({
-          color: '#ff0000',
-          width: 2,
-        }),
-      }),
+      style: (feature) => {
+        const isPoint = feature.get('isPoint')
+        if (isPoint) {
+          return new Style({
+            image: new Circle({
+              radius: 5,
+              fill: new Fill({ color: '#ff0000' }),
+            }),
+          })
+        }
+        return new Style({
+          stroke: new Stroke({
+            color: '#ff0000',
+            width: 2,
+          }),
+        })
+      },
     }),
   )
 
@@ -56,8 +68,6 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
       const extent = map.getView().calculateExtent()
       if (!extent) return
 
-      console.log('extent', extent)
-
       try {
         const result = await queryVeglenker({
           data: {
@@ -68,18 +78,11 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
           },
         })
         vectorSource.current.clear()
-
-        console.log('result', result)
-
-        result.features.forEach((feature) => {
-          if (feature.geometry) {
-            const olFeature = new Feature({
-              geometry: new LineString(feature.geometry.coordinates),
-              ...feature.properties,
-            })
-            vectorSource.current.addFeature(olFeature)
-          }
-        })
+        vectorSource.current.addFeatures(
+          new VectorSource({
+            features: new GeoJSON().readFeatures(result),
+          }).getFeatures(),
+        )
       } catch (error) {
         console.error('Error loading veglenker:', error)
         throw error
