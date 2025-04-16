@@ -1,77 +1,99 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MapRef } from '../components/Map'
 import { VegkartMap } from '../components/Map'
-import { getSyncState, syncVeglenker } from '../db/sync'
+import { getSyncProgress, getSyncState, startSync, stopSync } from '../db/sync'
 
 export const Route = createFileRoute('/')({
   component: Home,
 })
 
-interface SyncStatus {
-  startId: number
-  currentMaxId: number
+interface DbSyncState {
+  table_name: string
+  last_veglenkesekvens_id: number
+  last_veglenkenummer: number
+  last_sync: string
+}
+
+interface SyncProgress {
+  currentId: number
   lastVeglenkenummer: number
+  batchCount: number
+  isComplete: boolean
 }
 
 function Home() {
+  const [syncState, setSyncState] = useState<DbSyncState[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
-  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null)
-  const [currentId, setCurrentId] = useState<number | null>(null)
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const mapRef = useRef<MapRef>(null)
+  const pollInterval = useRef<NodeJS.Timeout>(null)
 
-  useEffect(() => {
-    loadSyncStatus()
-  }, [])
-
-  const loadSyncStatus = async () => {
+  const fetchSyncState = useCallback(async () => {
     try {
       const state = await getSyncState()
-      const veglenkerState = state.find((s) => s.table_name === 'veglenker')
-      if (veglenkerState) {
-        setSyncStatus({
-          startId: veglenkerState.last_veglenkesekvens_id,
-          currentMaxId: veglenkerState.last_veglenkesekvens_id,
-          lastVeglenkenummer: veglenkerState.last_veglenkenummer,
-        })
+      setSyncState(state)
+    } catch (error) {
+      console.error('Failed to fetch sync state:', error)
+    }
+  }, [])
+
+  const pollProgress = useCallback(async () => {
+    try {
+      const progress = await getSyncProgress()
+      setSyncProgress(progress)
+      if (progress.isComplete) {
+        setIsSyncing(false)
+        if (pollInterval.current) {
+          clearInterval(pollInterval.current)
+        }
       }
     } catch (error) {
-      console.error('Failed to load sync status:', error)
+      console.error('Failed to fetch sync progress:', error)
     }
-  }
+  }, [])
 
-  const handleLoad = async () => {
+  useEffect(() => {
+    fetchSyncState()
+  }, [fetchSyncState])
+
+  useEffect(() => {
+    if (isSyncing) {
+      pollProgress()
+      pollInterval.current = setInterval(pollProgress, 1000)
+    }
+    return () => {
+      if (pollInterval.current) {
+        clearInterval(pollInterval.current)
+      }
+    }
+  }, [isSyncing, pollProgress])
+
+  const startSyncHandler = useCallback(async () => {
     setIsSyncing(true)
     setError(null)
-    setCurrentId(null)
-    try {
-      const result = await syncVeglenker()
-      if (result.success) {
-        setSyncStatus({
-          startId: result.startId,
-          currentMaxId: result.currentMaxId,
-          lastVeglenkenummer: result.lastVeglenkenummer,
-        })
-        setCurrentId(result.currentId)
-        console.log(
-          `Synced veglenkesekvenser from ID ${result.startId} to ${result.currentMaxId}`,
-        )
-      } else {
-        setError(result.error)
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error'
-      setError(message)
-      console.error('Failed to sync veglenkesekvenser:', error)
-    } finally {
-      setIsSyncing(false)
-      setCurrentId(null)
-    }
-  }
+    setSyncProgress(null)
 
-  const handleDrawVeglenker = async () => {
+    try {
+      await startSync()
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unknown error')
+      setIsSyncing(false)
+    }
+  }, [])
+
+  const stopSyncHandler = useCallback(async () => {
+    try {
+      await stopSync()
+      setIsSyncing(false)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unknown error')
+    }
+  }, [])
+
+  const handleDrawVeglenker = useCallback(async () => {
     if (!mapRef.current) return
     setIsLoading(true)
     try {
@@ -82,50 +104,61 @@ function Home() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Vegkart Mikro</h1>
-          <div className="flex items-center gap-4">
-            {syncStatus && (
-              <div className="text-sm">
-                {isSyncing ? (
-                  <>
-                    Loading ID: {currentId} / {syncStatus.currentMaxId}{' '}
-                    (veglenkenummer: {syncStatus.lastVeglenkenummer})
-                  </>
-                ) : (
-                  <>
-                    Synced to ID: {syncStatus.currentMaxId} (veglenkenummer:{' '}
-                    {syncStatus.lastVeglenkenummer})
-                  </>
-                )}
-              </div>
+      <div className="navbar bg-base-100 shadow-lg">
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold">Vegkart</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          {syncProgress && (
+            <div className="text-sm">
+              {isSyncing ? (
+                <>
+                  Loading ID: {syncProgress.currentId}-
+                  {syncProgress.lastVeglenkenummer}
+                  <span className="ml-2 badge badge-sm">
+                    Batch {syncProgress.batchCount}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Synced to ID: {syncProgress.currentId}-
+                  {syncProgress.lastVeglenkenummer}
+                  <span className="ml-2 badge badge-sm badge-success">
+                    {syncProgress.batchCount} batches
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+          {error && <div className="text-sm text-error">Error: {error}</div>}
+          <div className="flex gap-2">
+            {!isSyncing ? (
+              <button onClick={startSyncHandler} className="btn btn-primary">
+                Start Sync
+              </button>
+            ) : (
+              <button onClick={stopSyncHandler} className="btn btn-error">
+                Stop Sync
+              </button>
             )}
-            {error && <div className="text-sm text-error">Error: {error}</div>}
-            <button
-              className="btn btn-primary"
-              onClick={handleLoad}
-              disabled={isSyncing}
-            >
-              {isSyncing ? 'Syncing...' : 'Synkroniser veglenkesekvenser'}
-            </button>
             <button
               onClick={handleDrawVeglenker}
               disabled={isLoading}
-              className="btn btn-primary"
+              className="btn btn-accent"
             >
               {isLoading ? 'Loading...' : 'Draw Veglenker'}
             </button>
           </div>
         </div>
-      </header>
-      <main className="flex-1">
+      </div>
+
+      <div className="flex-1">
         <VegkartMap ref={mapRef} />
-      </main>
+      </div>
     </div>
   )
 }

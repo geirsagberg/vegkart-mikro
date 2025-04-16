@@ -4,11 +4,34 @@ import { createServerFn } from '@tanstack/react-start'
 const NVDB_STREAM_URL =
   'https://nvdbapiles.test.atlas.vegvesen.no/uberiket/api/v1/vegnett/veglenker/stream'
 
-interface SyncState {
+interface DbSyncState {
   table_name: string
   last_veglenkesekvens_id: number
   last_veglenkenummer: number
   last_sync: string
+}
+
+interface SyncProgress {
+  currentId: number
+  lastVeglenkenummer: number
+  batchCount: number
+  isComplete: boolean
+}
+
+interface SyncStatus {
+  isRunning: boolean
+  currentId: number
+  lastVeglenkenummer: number
+  batchCount: number
+  error: string | null
+}
+
+let syncStatus: SyncStatus = {
+  isRunning: false,
+  currentId: 0,
+  lastVeglenkenummer: 0,
+  batchCount: 0,
+  error: null,
 }
 
 interface MaxIdResult {
@@ -68,17 +91,20 @@ async function updateSyncState(
   `)
 }
 
-export const syncVeglenker = createServerFn({ method: 'POST' }).handler(
-  async (): Promise<
-    | {
-        success: true
-        startId: number
-        currentMaxId: number
-        currentId: number
-        lastVeglenkenummer: number
-      }
-    | { success: false; error: string }
-  > => {
+export const startSync = createServerFn({ method: 'POST' }).handler(
+  async (): Promise<void> => {
+    if (syncStatus.isRunning) {
+      throw new Error('Sync already running')
+    }
+
+    syncStatus = {
+      isRunning: true,
+      currentId: 0,
+      lastVeglenkenummer: 0,
+      batchCount: 0,
+      error: null,
+    }
+
     const instance = await DuckDBInstance.fromCache('spatial.db')
     const connection = await instance.connect()
 
@@ -89,19 +115,16 @@ export const syncVeglenker = createServerFn({ method: 'POST' }).handler(
         'veglenker',
       )
 
-      let currentId = veglenkesekvensId
-      let lastVeglenkenummer = veglenkenummer
-      let hasMore = true
-      let batchCount = 0
-      const MAX_BATCHES = 5
+      syncStatus.currentId = veglenkesekvensId
+      syncStatus.lastVeglenkenummer = veglenkenummer
 
       // Enable httpfs extension
       await connection.run(
         'INSTALL httpfs; LOAD httpfs; INSTALL spatial; LOAD spatial;',
       )
 
-      while (hasMore && batchCount < MAX_BATCHES) {
-        const url = `${NVDB_STREAM_URL}?start=${currentId}-${lastVeglenkenummer}&antall=100`
+      while (syncStatus.isRunning) {
+        const url = `${NVDB_STREAM_URL}?start=${syncStatus.currentId}-${syncStatus.lastVeglenkenummer}&antall=100`
 
         // Check if table exists
         const tableExists = await connection.runAndReadAll(`
@@ -118,8 +141,8 @@ export const syncVeglenker = createServerFn({ method: 'POST' }).handler(
               veglenkenummer,
               startposisjon,
               sluttposisjon,
-              gyldighetsperiode.startdato as startdato,
-              gyldighetsperiode.sluttdato as sluttdato,
+              gyldighetsperiode->'startdato' as startdato,
+              gyldighetsperiode->'sluttdato' as sluttdato,
               ST_GeomFromText(geometri.wkt) as geometri,
               kommune,
               lengde
@@ -134,8 +157,8 @@ export const syncVeglenker = createServerFn({ method: 'POST' }).handler(
               veglenkenummer,
               startposisjon,
               sluttposisjon,
-              gyldighetsperiode.startdato as startdato,
-              gyldighetsperiode.sluttdato as sluttdato,
+              gyldighetsperiode->'startdato' as startdato,
+              gyldighetsperiode->'sluttdato' as sluttdato,
               ST_GeomFromText(geometri.wkt) as geometri,
               kommune,
               lengde
@@ -161,43 +184,46 @@ export const syncVeglenker = createServerFn({ method: 'POST' }).handler(
               }
             : null
 
-        console.log(lastRow)
+        if (lastRow) {
+          syncStatus.currentId = lastRow.currentId
+          syncStatus.lastVeglenkenummer = lastRow.lastVeglenkenummer
 
-        currentId = lastRow?.currentId ?? currentId
-        lastVeglenkenummer = lastRow?.lastVeglenkenummer ?? lastVeglenkenummer
+          // Update sync state
+          await updateSyncState(
+            connection,
+            'veglenker',
+            syncStatus.currentId,
+            syncStatus.lastVeglenkenummer,
+          )
 
-        // Update sync state
-        await updateSyncState(
-          connection,
-          'veglenker',
-          currentId,
-          lastVeglenkenummer,
-        )
-
-        console.log(
-          `Batch ${batchCount} completed. Last ID: ${currentId}, Last veglenkenummer: ${lastVeglenkenummer}`,
-        )
-        batchCount++
-
-        if (!lastRow) {
-          hasMore = false
-          break
+          syncStatus.batchCount++
+        } else {
+          syncStatus.isRunning = false
         }
-      }
-
-      return {
-        success: true,
-        startId: veglenkesekvensId,
-        currentMaxId: currentId,
-        currentId,
-        lastVeglenkenummer,
       }
     } catch (error: unknown) {
       console.error('Sync failed:', error)
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      }
+      syncStatus.error =
+        error instanceof Error ? error.message : 'Unknown error'
+      syncStatus.isRunning = false
+      throw error
+    }
+  },
+)
+
+export const stopSync = createServerFn({ method: 'POST' }).handler(
+  async (): Promise<void> => {
+    syncStatus.isRunning = false
+  },
+)
+
+export const getSyncProgress = createServerFn({ method: 'GET' }).handler(
+  async (): Promise<SyncProgress> => {
+    return {
+      currentId: syncStatus.currentId,
+      lastVeglenkenummer: syncStatus.lastVeglenkenummer,
+      batchCount: syncStatus.batchCount,
+      isComplete: !syncStatus.isRunning,
     }
   },
 )
@@ -211,7 +237,7 @@ export const getSyncState = createServerFn({ method: 'GET' }).handler(
       const result = await connection.runAndReadAll(`
       SELECT * FROM sync_state
     `)
-      return result.getRowsJS() as unknown as SyncState[]
+      return result.getRowsJS() as unknown as DbSyncState[]
     } finally {
       // No need to close - DuckDB handles cleanup
     }

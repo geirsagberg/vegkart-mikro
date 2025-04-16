@@ -105,7 +105,7 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
     popupOverlay.current = new Overlay({
       element: popupRef.current!,
       positioning: 'top-right',
-      offset: [10, -10],
+      offset: [32, -32],
       autoPan: true,
     })
 
