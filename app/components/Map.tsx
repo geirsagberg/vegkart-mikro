@@ -8,9 +8,10 @@ import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
 import { get as getProjection, transform } from 'ol/proj'
 import { register } from 'ol/proj/proj4'
+import Cluster from 'ol/source/Cluster'
 import OSM from 'ol/source/OSM'
 import VectorSource from 'ol/source/Vector'
-import { Circle, Fill, Stroke, Style } from 'ol/style'
+import { Circle, Fill, Stroke, Style, Text } from 'ol/style'
 import proj4 from 'proj4'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { queryVeglenker } from '../db/queries'
@@ -34,12 +35,37 @@ export interface MapRef {
 export const VegkartMap = forwardRef<MapRef>((_, ref) => {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<Map | null>(null)
-  const vectorSource = useRef(new VectorSource())
+  const lineStringSource = useRef(new VectorSource())
+  const pointSource = useRef(new VectorSource())
+  const clusterSource = useRef(
+    new Cluster({
+      source: pointSource.current,
+      distance: 40,
+    }),
+  )
   const popupRef = useRef<HTMLDivElement>(null)
   const popupOverlay = useRef<Overlay | null>(null)
-  const vectorLayer = useRef(
+  const clusterLayer = useRef(
     new VectorLayer({
-      source: vectorSource.current,
+      source: clusterSource.current,
+      style: (feature) => {
+        const size = feature.get('features')?.length
+        return new Style({
+          image: new Circle({
+            radius: 10,
+            fill: new Fill({ color: '#ff0000' }),
+          }),
+          text: new Text({
+            text: size.toString(),
+            fill: new Fill({ color: '#fff' }),
+          }),
+        })
+      },
+    }),
+  )
+  const featureLayer = useRef(
+    new VectorLayer({
+      source: lineStringSource.current,
       style: (feature) => {
         const isPoint = feature.get('isPoint')
         if (isPoint) {
@@ -77,12 +103,14 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
             maxY: extent[3]!,
           },
         })
-        vectorSource.current.clear()
-        vectorSource.current.addFeatures(
-          new VectorSource({
-            features: new GeoJSON().readFeatures(result),
-          }).getFeatures(),
-        )
+        lineStringSource.current.clear()
+        pointSource.current.clear()
+        const features = new GeoJSON().readFeatures(result)
+        if (features.length > 0 && features[0]?.get('isPoint')) {
+          pointSource.current.addFeatures(features)
+        } else {
+          lineStringSource.current.addFeatures(features)
+        }
       } catch (error) {
         console.error('Error loading veglenker:', error)
         throw error
@@ -118,7 +146,8 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
         new TileLayer({
           source: new OSM(),
         }),
-        vectorLayer.current,
+        clusterLayer.current,
+        featureLayer.current,
       ],
       view: new View({
         center: kristiansandUTM,
@@ -131,12 +160,17 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
     // Add hover interaction
     const select = new Select({
       condition: pointerMove,
-      layers: [vectorLayer.current],
+      layers: [featureLayer.current],
     })
 
     select.on('select', (e) => {
       const feature = e.selected[0]
       if (feature) {
+        const size = feature.get('features')?.length
+        if (size > 1) {
+          popupOverlay.current!.setPosition(undefined)
+          return
+        }
         const properties = feature.getProperties()
         const popupContent = `
           <div class="p-2 bg-white rounded shadow">
