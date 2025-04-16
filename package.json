@@ -6,7 +6,8 @@
     "dev": "vinxi dev",
     "build": "vinxi build",
     "start": "vinxi start",
-    "generate:nvdb": "bun run scripts/generate-nvdb-client.ts"
+    "generate:nvdb": "bun run scripts/generate-nvdb-client.ts",
+    "debug": "bun --inspect-brk run dev"
   },
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "^2.18.4",
