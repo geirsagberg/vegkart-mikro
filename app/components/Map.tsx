@@ -1,7 +1,10 @@
 import { Feature } from 'ol'
 import Map from 'ol/Map'
+import Overlay from 'ol/Overlay'
 import View from 'ol/View'
+import { pointerMove } from 'ol/events/condition'
 import { LineString } from 'ol/geom'
+import Select from 'ol/interaction/Select'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
 import { get as getProjection, transform } from 'ol/proj'
@@ -11,7 +14,7 @@ import VectorSource from 'ol/source/Vector'
 import { Stroke, Style } from 'ol/style'
 import proj4 from 'proj4'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { queryVeglenker } from '../db/sync'
+import { queryVeglenker } from '../db/queries'
 
 // Register EPSG:25833 (ETRS89 / UTM zone 33N)
 proj4.defs(
@@ -31,6 +34,8 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
   const mapRef = useRef<HTMLDivElement>(null)
   const mapInstance = useRef<Map | null>(null)
   const vectorSource = useRef(new VectorSource())
+  const popupRef = useRef<HTMLDivElement>(null)
+  const popupOverlay = useRef<Overlay | null>(null)
   const vectorLayer = useRef(
     new VectorLayer({
       source: vectorSource.current,
@@ -96,6 +101,14 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
       'EPSG:25833',
     )
 
+    // Create popup overlay
+    popupOverlay.current = new Overlay({
+      element: popupRef.current!,
+      positioning: 'top-right',
+      offset: [10, -10],
+      autoPan: true,
+    })
+
     const map = new Map({
       target: mapRef.current,
       layers: [
@@ -109,7 +122,64 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
         zoom: 8,
         projection: 'EPSG:25833',
       }),
+      overlays: [popupOverlay.current],
     })
+
+    // Add hover interaction
+    const select = new Select({
+      condition: pointerMove,
+      layers: [vectorLayer.current],
+    })
+
+    select.on('select', (e) => {
+      const feature = e.selected[0]
+      if (feature) {
+        const properties = feature.getProperties()
+        const popupContent = `
+          <div class="p-2 bg-white rounded shadow">
+            <div class="font-bold mb-2">Veglenke ${properties.veglenkesekvensId}-${properties.veglenkenummer}</div>
+            <table class="text-sm">
+              <tr>
+                <td class="pr-2 font-medium">Lengde:</td>
+                <td>${properties.lengde.toFixed(1)}m</td>
+              </tr>
+              <tr>
+                <td class="pr-2 font-medium">Kommune:</td>
+                <td>${properties.kommune}</td>
+              </tr>
+              <tr>
+                <td class="pr-2 font-medium">Startposisjon:</td>
+                <td>${properties.startposisjon}</td>
+              </tr>
+              <tr>
+                <td class="pr-2 font-medium">Sluttposisjon:</td>
+                <td>${properties.sluttposisjon}</td>
+              </tr>
+              <tr>
+                <td class="pr-2 font-medium">Startdato:</td>
+                <td>${properties.startdato}</td>
+              </tr>
+              ${
+                properties.sluttdato
+                  ? `
+                <tr>
+                  <td class="pr-2 font-medium">Sluttdato:</td>
+                  <td>${properties.sluttdato}</td>
+                </tr>
+              `
+                  : ''
+              }
+            </table>
+          </div>
+        `
+        popupRef.current!.innerHTML = popupContent
+        popupOverlay.current!.setPosition(e.mapBrowserEvent.coordinate)
+      } else {
+        popupOverlay.current!.setPosition(undefined)
+      }
+    })
+
+    map.addInteraction(select)
 
     mapInstance.current = map
 
@@ -136,5 +206,10 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
     }
   })
 
-  return <div ref={mapRef} className="w-full h-full" />
+  return (
+    <>
+      <div ref={mapRef} className="w-full h-full" />
+      <div ref={popupRef} className="absolute z-10 pointer-events-none" />
+    </>
+  )
 })
