@@ -1,0 +1,29 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Vegkart Project Rules
+
+## Geometry Handling
+- All geometry data is stored in UTM33 (EPSG:25833)
+- Use GeoJSON format for geometry transfer between DuckDB and OpenLayers
+- Avoid unnecessary SRID transformations when querying geometries
+
+## DuckDB Query Rules
+- Use spatial extensions for geometry operations
+- Prefer direct extent-based queries over SRID transformations
+- Use prepared statements for repeated queries
+- Handle missing/null values in JSON data gracefully
+
+## Map Component Rules
+- Map component should handle UTM33 coordinates directly
+- Use OpenLayers VectorLayer for veglenker visualization
+- Implement efficient feature loading based on view extent
+- Use GeoJSON for feature creation and updates
+
+## Data Sync Rules
+- Maintain sync state in DuckDB for tracking progress
+- Use batch processing for large data imports
+- Handle missing/null values in JSON data gracefully
+- Implement proper error handling and state management 
