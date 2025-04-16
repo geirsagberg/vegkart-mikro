@@ -70,3 +70,6 @@ count.txt
 .output
 
 *.db
+
+# DuckDB WAL files
+*.db.wal

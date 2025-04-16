@@ -1,5 +1,4 @@
-import { DuckDBConnection, DuckDBInstance } from '@duckdb/node-api'
-import { VegnettApiFp } from '../lib/nvdb/api'
+import { DuckDBInstance } from '@duckdb/node-api'
 import { sql } from './sql'
 
 export async function initDB() {
@@ -50,13 +49,4 @@ export async function initDB() {
   `)
 
   return { success: true }
-}
-
-const veglenkesekvenserApi = VegnettApiFp({
-  basePath: 'https://nvdbapiles.atlas.vegvesen.no/uberiket/api/v1',
-  isJsonMime: (mime: string) => mime === 'application/json',
-})
-
-async function loadVeglenker(connection: DuckDBConnection) {
-  const veglenkesekvenser = await veglenkesekvenserApi.hentVeglenkesekvenser()
 }

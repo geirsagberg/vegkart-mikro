@@ -1,0 +1,1308 @@
+openapi: 3.1.0
+info:
+  title: NVDB API Les Uberiket
+  description:
+    "Dette API-et brukes til å lese uberikede hendelser, vegobjekter og\
+    \ vegnett. Les mer om bruk av API-et på https://nvdb.atlas.vegvesen.no/produkter/nvdbapil/v1/Uberiket"
+  contact:
+    name: Nasjonal vegdatabank (NVDB)
+    url: https://nvdb.atlas.vegvesen.no/
+    email: nvdb@vegvesen.no
+  license:
+    name: NLOD 1.0
+    url: https://data.norge.no/nlod/no/1.0
+  version: v1
+servers:
+  - url: /
+    description: Default Server URL
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/vegobjekter/{typeId}:
+    get:
+      tags:
+        - Vegobjekter
+      summary: Hent vegobjekter
+      operationId: hentVegobjekter
+      parameters:
+        - name: typeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+        - name: ider
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+            uniqueItems: true
+        - name: inkluder
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - gyldighetsperiode
+                - egenskaper
+                - stedfesting
+                - barn
+                - alle
+                - minimum
+            uniqueItems: true
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegobjekterSide'
+  /api/v1/vegobjekter/{typeId}/{vegobjektId}/{versjon}:
+    get:
+      tags:
+        - Vegobjekter
+      summary: Hent vegobjekt
+      operationId: hentVegobjekt
+      parameters:
+        - name: typeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: vegobjektId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: versjon
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: inkluder
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - gyldighetsperiode
+                - egenskaper
+                - stedfesting
+                - barn
+                - alle
+                - minimum
+            uniqueItems: true
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Vegobjekt'
+  /api/v1/vegnett/veglenkesekvenser:
+    get:
+      tags:
+        - Vegnett
+      summary: Hent veglenkesekvenser
+      operationId: hentVeglenkesekvenser
+      parameters:
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+        - name: ider
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+            uniqueItems: true
+        - name: startId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VeglenkesekvenserSide'
+  /api/v1/vegnett/veglenkesekvenser/{veglenkesekvensId}:
+    get:
+      tags:
+        - Vegnett
+      summary: Hent veglenkesekvens
+      operationId: hentVeglenkesekvens
+      parameters:
+        - name: veglenkesekvensId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Veglenkesekvens'
+  /api/v1/vegnett/noder:
+    get:
+      tags:
+        - Vegnett
+      summary: Hent noder
+      operationId: hentNoder
+      parameters:
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+        - name: ider
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+            uniqueItems: true
+        - name: startId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/NoderSide'
+  /api/v1/vegnett/noder/{nodeId}:
+    get:
+      tags:
+        - Vegnett
+      summary: Hent node
+      operationId: hentNode
+      parameters:
+        - name: nodeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Node'
+  /api/v1/hendelser/vegobjekter/{typeId}:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent vegobjekthendelser
+      operationId: hentVegobjektHendelser
+      parameters:
+        - name: typeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: fraHendelseId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegobjektHendelserSide'
+  /api/v1/hendelser/vegobjekter/{typeId}/siste:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent siste vegobjekthendelse
+      operationId: hentSisteVegobjektHendelseId
+      parameters:
+        - name: typeId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+        - name: tidspunkt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegobjektNotifikasjon'
+  /api/v1/hendelser/vegnett:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent vegnetthendelser (noder og veglenkesekvenser)
+      operationId: hentVegnettHendelser
+      parameters:
+        - name: fraHendelseId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettHendelserSide'
+  /api/v1/hendelser/vegnett/siste:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent siste vegnetthendelse (node eller veglenkesekvens)
+      operationId: hentSisteVegnettHendelse
+      parameters:
+        - name: tidspunkt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettNotifikasjon'
+  /api/v1/hendelser/veglenkesekvenser:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent veglenkesekvenshendelser
+      operationId: hentVeglenkesekvensHendelser
+      parameters:
+        - name: fraHendelseId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettHendelserSide'
+  /api/v1/hendelser/veglenkesekvenser/siste:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent siste veglenkesekvenshendelse
+      operationId: hentSisteVeglenkesekvensHendelse
+      parameters:
+        - name: tidspunkt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettNotifikasjon'
+  /api/v1/hendelser/noder:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent nodehendelser
+      operationId: hentNodeHendelser
+      parameters:
+        - name: fraHendelseId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: antall
+          in: query
+          description:
+            Antall som skal returneres i respons. Må være et heltall mellom
+            1 og 1000
+          required: false
+          schema:
+            type: integer
+            format: int32
+            maximum: 1000
+            minimum: 1
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettHendelserSide'
+  /api/v1/hendelser/noder/siste:
+    get:
+      tags:
+        - Hendelser
+      summary: Hent siste nodehendelse
+      operationId: hentSisteNodeHendelse
+      parameters:
+        - name: tidspunkt
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '500':
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '404':
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '403':
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '401':
+          description: Unauthorized
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/VegnettNotifikasjon'
+components:
+  schemas:
+    ProblemDetail:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          format: int32
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+        properties:
+          type: object
+          additionalProperties: {}
+    EgenskapVerdi:
+      type: object
+    GeometriKvalitet:
+      type: object
+      properties:
+        malemetode:
+          type: integer
+          format: int32
+        malemetodeHoyde:
+          type: integer
+          format: int32
+        noyaktighet:
+          type: integer
+          format: int32
+        noyaktighetHoyde:
+          type: integer
+          format: int32
+        synbarhet:
+          type: integer
+          format: int32
+        maksimaltAvvik:
+          type: integer
+          format: int32
+        datafangstmetode:
+          type: string
+        datafangstmetodeHoyde:
+          type: string
+    Geometristruktur:
+      type: object
+      properties:
+        wkt:
+          type: string
+        srid:
+          type: string
+          enum:
+            - '5972'
+            - '5973'
+            - '5974'
+            - '5975'
+            - '4326'
+        lengde:
+          type: number
+          format: double
+        datafangstdato:
+          type: string
+          format: date
+        temakode:
+          type: integer
+          format: int32
+        medium:
+          type: integer
+          format: int32
+        kommune:
+          type: integer
+          format: int32
+        hoydereferanse:
+          type: integer
+          format: int32
+        sosiNavn:
+          type: string
+        referansegeometri:
+          type: boolean
+        verifiseringsdato:
+          type: string
+          format: date
+        oppdateringsdato:
+          type: string
+          format: date
+        prosesshistorikk:
+          type: string
+        kvalitet:
+          $ref: '#/components/schemas/GeometriKvalitet'
+      required:
+        - srid
+        - wkt
+    Gyldighetsperiode:
+      type: object
+      properties:
+        startdato:
+          type: string
+          format: date
+        sluttdato:
+          type: string
+          format: date
+      required:
+        - startdato
+    NesteSide:
+      type: object
+      properties:
+        start:
+          type: string
+        href:
+          type: string
+      required:
+        - href
+        - start
+    SideMetadata:
+      type: object
+      properties:
+        returnert:
+          type: integer
+          format: int32
+        sidestorrelse:
+          type: integer
+          format: int32
+        neste:
+          $ref: '#/components/schemas/NesteSide'
+      required:
+        - returnert
+        - sidestorrelse
+    Stedfesting:
+      type: object
+    StedfestingLinje:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        startposisjon:
+          type: number
+          format: double
+        sluttposisjon:
+          type: number
+          format: double
+        retning:
+          type: string
+          enum:
+            - '0'
+            - '1'
+        sideposisjon:
+          type: string
+          enum:
+            - V
+            - H
+            - HV
+            - VH
+            - M
+            - K
+            - MV
+            - MH
+            - VT
+            - HT
+            - R0
+            - R
+            - L
+        kjorefelt:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - kjorefelt
+        - sluttposisjon
+        - startposisjon
+    Vegobjekt:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        versjon:
+          type: integer
+          format: int32
+        typeId:
+          type: integer
+          format: int32
+        gyldighetsperiode:
+          $ref: '#/components/schemas/Gyldighetsperiode'
+        egenskaper:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/EgenskapVerdi'
+        barn:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/VegobjektId'
+            uniqueItems: true
+        stedfesting:
+          $ref: '#/components/schemas/Stedfesting'
+        sistEndret:
+          type: string
+          format: date-time
+      required:
+        - id
+        - sistEndret
+        - typeId
+        - versjon
+    VegobjektId:
+      type: object
+      properties:
+        value:
+          type: integer
+          format: int64
+      required:
+        - value
+    VegobjekterSide:
+      type: object
+      properties:
+        vegobjekter:
+          type: array
+          items:
+            $ref: '#/components/schemas/Vegobjekt'
+        metadata:
+          $ref: '#/components/schemas/SideMetadata'
+      required:
+        - metadata
+        - vegobjekter
+    Veglenke:
+      type: object
+      properties:
+        nummer:
+          type: integer
+          format: int32
+        gyldighetsperiode:
+          $ref: '#/components/schemas/Gyldighetsperiode'
+        konnektering:
+          type: boolean
+        topologiniva:
+          type: string
+          enum:
+            - '0'
+            - '1'
+            - '2'
+        maledato:
+          type: string
+          format: date
+        malemetode:
+          type: string
+          enum:
+            - '0'
+            - '1'
+        detaljniva:
+          type: string
+          enum:
+            - '0'
+            - '1'
+            - '2'
+            - '3'
+        typeVeg:
+          type: string
+          enum:
+            - '0'
+            - '1'
+            - '2'
+            - '3'
+            - '4'
+            - '5'
+            - '6'
+            - '7'
+            - '8'
+            - '9'
+            - '10'
+            - '11'
+            - '12'
+            - '13'
+            - '14'
+            - '15'
+            - '16'
+        superstedfesting:
+          $ref: '#/components/schemas/StedfestingLinje'
+        startport:
+          type: integer
+          format: int32
+        sluttport:
+          type: integer
+          format: int32
+        kommune:
+          type: integer
+          format: int32
+        geometri:
+          $ref: '#/components/schemas/Geometristruktur'
+        lengde:
+          type: number
+          format: double
+        feltoversikt:
+          type: array
+          items:
+            type: string
+      required:
+        - detaljniva
+        - feltoversikt
+        - geometri
+        - gyldighetsperiode
+        - kommune
+        - konnektering
+        - lengde
+        - malemetode
+        - nummer
+        - sluttport
+        - startport
+        - topologiniva
+        - typeVeg
+    Veglenkesekvens:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        porter:
+          type: array
+          items:
+            $ref: '#/components/schemas/Veglenkesekvensport'
+        veglenker:
+          type: array
+          items:
+            $ref: '#/components/schemas/Veglenke'
+        lengde:
+          type: number
+          format: double
+        sistEndret:
+          type: string
+          format: date-time
+      required:
+        - id
+        - lengde
+        - porter
+        - sistEndret
+        - veglenker
+    VeglenkesekvenserSide:
+      type: object
+      properties:
+        veglenkesekvenser:
+          type: array
+          items:
+            $ref: '#/components/schemas/Veglenkesekvens'
+        metadata:
+          $ref: '#/components/schemas/SideMetadata'
+      required:
+        - metadata
+        - veglenkesekvenser
+    Veglenkesekvensport:
+      type: object
+      properties:
+        nummer:
+          type: integer
+          format: int32
+        nodeId:
+          type: integer
+          format: int64
+        nodePortNummer:
+          type: integer
+          format: int32
+        posisjon:
+          type: number
+          format: double
+      required:
+        - nodeId
+        - nodePortNummer
+        - nummer
+        - posisjon
+    Node:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        porter:
+          type: array
+          items:
+            $ref: '#/components/schemas/Nodeport'
+        gyldighetsperiode:
+          $ref: '#/components/schemas/Gyldighetsperiode'
+        geometri:
+          $ref: '#/components/schemas/Geometristruktur'
+        sistEndret:
+          type: string
+          format: date-time
+      required:
+        - geometri
+        - gyldighetsperiode
+        - id
+        - porter
+        - sistEndret
+    Nodeport:
+      type: object
+      properties:
+        nummer:
+          type: integer
+          format: int32
+        veglenkesekvensId:
+          type: integer
+          format: int64
+        veglenkesekvensPortNummer:
+          type: integer
+          format: int32
+      required:
+        - nummer
+        - veglenkesekvensId
+        - veglenkesekvensPortNummer
+    NoderSide:
+      type: object
+      properties:
+        noder:
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        metadata:
+          $ref: '#/components/schemas/SideMetadata'
+      required:
+        - metadata
+        - noder
+    VegobjektHendelserSide:
+      type: object
+      properties:
+        hendelser:
+          type: array
+          items:
+            $ref: '#/components/schemas/VegobjektNotifikasjon'
+        metadata:
+          $ref: '#/components/schemas/SideMetadata'
+      required:
+        - hendelser
+        - metadata
+    VegobjektNotifikasjon:
+      type: object
+      properties:
+        hendelseId:
+          type: integer
+          format: int64
+        hendelseType:
+          type: string
+        vegobjektId:
+          type: integer
+          format: int64
+        vegobjektTypeId:
+          type: integer
+          format: int32
+        vegobjektVersjon:
+          type: integer
+          format: int32
+        tidspunkt:
+          type: string
+          format: date-time
+      required:
+        - hendelseId
+        - hendelseType
+        - tidspunkt
+        - vegobjektId
+        - vegobjektTypeId
+        - vegobjektVersjon
+    VegnettHendelserSide:
+      type: object
+      properties:
+        hendelser:
+          type: array
+          items:
+            $ref: '#/components/schemas/VegnettNotifikasjon'
+        metadata:
+          $ref: '#/components/schemas/SideMetadata'
+      required:
+        - hendelser
+        - metadata
+    VegnettNotifikasjon:
+      type: object
+      properties:
+        hendelseId:
+          type: integer
+          format: int64
+        nettelementId:
+          type: integer
+          format: int64
+        nettelementType:
+          type: integer
+          format: int32
+        tidspunkt:
+          type: string
+          format: date-time
+        hendelseType:
+          type: string
+      required:
+        - hendelseId
+        - hendelseType
+        - nettelementId
+        - nettelementType
+        - tidspunkt
+  securitySchemes:
+    bearerAuth:
+      type: oauth2
+      name: bearerAuth
+      flows:
+        authorizationCode:
+          authorizationUrl: https://www.vegvesen.no:443/openam/oauth2/realms/root/realms/Employees/authorize
+          tokenUrl: https://www.vegvesen.no:443/openam/oauth2/realms/root/realms/Employees/access_token
+          scopes:
+            openid: Open ID
+            svvprofile: SVV profile

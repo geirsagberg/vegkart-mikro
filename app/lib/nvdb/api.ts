@@ -232,10 +232,10 @@ export interface Node {
     'id': number;
     /**
      * 
-     * @type {Set<Nodeport>}
+     * @type {Array<Nodeport>}
      * @memberof Node
      */
-    'porter': Set<Nodeport>;
+    'porter': Array<Nodeport>;
     /**
      * 
      * @type {Gyldighetsperiode}
@@ -590,16 +590,16 @@ export interface Veglenkesekvens {
     'id': number;
     /**
      * 
-     * @type {Set<Veglenkesekvensport>}
+     * @type {Array<Veglenkesekvensport>}
      * @memberof Veglenkesekvens
      */
-    'porter': Set<Veglenkesekvensport>;
+    'porter': Array<Veglenkesekvensport>;
     /**
      * 
-     * @type {Set<Veglenke>}
+     * @type {Array<Veglenke>}
      * @memberof Veglenkesekvens
      */
-    'veglenker': Set<Veglenke>;
+    'veglenker': Array<Veglenke>;
     /**
      * 
      * @type {number}
@@ -706,12 +706,6 @@ export interface VegnettNotifikasjon {
      * @memberof VegnettNotifikasjon
      */
     'nettelementType': number;
-    /**
-     * 
-     * @type {number}
-     * @memberof VegnettNotifikasjon
-     */
-    'versjon': number;
     /**
      * 
      * @type {string}
@@ -883,12 +877,140 @@ export const HendelserApiAxiosParamCreator = function (configuration?: Configura
     return {
         /**
          * 
-         * @summary Hent siste vegnett hendelse Id
+         * @summary Hent nodehendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentNodeHendelser: async (fraHendelseId: number, antall?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'fraHendelseId' is not null or undefined
+            assertParamExists('hentNodeHendelser', 'fraHendelseId', fraHendelseId)
+            const localVarPath = `/api/v1/hendelser/noder`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "bearerAuth", [], configuration)
+
+            if (fraHendelseId !== undefined) {
+                localVarQueryParameter['fraHendelseId'] = fraHendelseId;
+            }
+
+            if (antall !== undefined) {
+                localVarQueryParameter['antall'] = antall;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Hent siste nodehendelse
          * @param {string} [tidspunkt] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        hentSisteVegnettHendelseId: async (tidspunkt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        hentSisteNodeHendelse: async (tidspunkt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/hendelser/noder/siste`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "bearerAuth", [], configuration)
+
+            if (tidspunkt !== undefined) {
+                localVarQueryParameter['tidspunkt'] = (tidspunkt as any instanceof Date) ?
+                    (tidspunkt as any).toISOString() :
+                    tidspunkt;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Hent siste veglenkesekvenshendelse
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentSisteVeglenkesekvensHendelse: async (tidspunkt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/v1/hendelser/veglenkesekvenser/siste`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "bearerAuth", [], configuration)
+
+            if (tidspunkt !== undefined) {
+                localVarQueryParameter['tidspunkt'] = (tidspunkt as any instanceof Date) ?
+                    (tidspunkt as any).toISOString() :
+                    tidspunkt;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Hent siste vegnetthendelse (node eller veglenkesekvens)
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentSisteVegnettHendelse: async (tidspunkt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/v1/hendelser/vegnett/siste`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -924,7 +1046,7 @@ export const HendelserApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * 
-         * @summary Hent siste vegobjekt hendelse Id
+         * @summary Hent siste vegobjekthendelse
          * @param {number} typeId 
          * @param {string} [tidspunkt] 
          * @param {*} [options] Override http request option.
@@ -969,7 +1091,53 @@ export const HendelserApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * 
-         * @summary Hent vegnett hendelser
+         * @summary Hent veglenkesekvenshendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentVeglenkesekvensHendelser: async (fraHendelseId: number, antall?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'fraHendelseId' is not null or undefined
+            assertParamExists('hentVeglenkesekvensHendelser', 'fraHendelseId', fraHendelseId)
+            const localVarPath = `/api/v1/hendelser/veglenkesekvenser`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication bearerAuth required
+            // oauth required
+            await setOAuthToObject(localVarHeaderParameter, "bearerAuth", [], configuration)
+
+            if (fraHendelseId !== undefined) {
+                localVarQueryParameter['fraHendelseId'] = fraHendelseId;
+            }
+
+            if (antall !== undefined) {
+                localVarQueryParameter['antall'] = antall;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @summary Hent vegnetthendelser (noder og veglenkesekvenser)
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
          * @param {*} [options] Override http request option.
@@ -1013,7 +1181,7 @@ export const HendelserApiAxiosParamCreator = function (configuration?: Configura
         },
         /**
          * 
-         * @summary Hent vegobjekt hendelser
+         * @summary Hent vegobjekthendelser
          * @param {number} typeId 
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
@@ -1071,26 +1239,66 @@ export const HendelserApiFp = function(configuration?: Configuration) {
     return {
         /**
          * 
-         * @summary Hent siste vegnett hendelse Id
-         * @param {string} [tidspunkt] 
+         * @summary Hent nodehendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async hentSisteVegnettHendelseId(tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.hentSisteVegnettHendelseId(tidspunkt, options);
+        async hentNodeHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegnettHendelserSide>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.hentNodeHendelser(fraHendelseId, antall, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentSisteVegnettHendelseId']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentNodeHendelser']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
          * 
-         * @summary Hent siste vegobjekt hendelse Id
+         * @summary Hent siste nodehendelse
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async hentSisteNodeHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegnettNotifikasjon>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.hentSisteNodeHendelse(tidspunkt, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentSisteNodeHendelse']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Hent siste veglenkesekvenshendelse
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async hentSisteVeglenkesekvensHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegnettNotifikasjon>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.hentSisteVeglenkesekvensHendelse(tidspunkt, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentSisteVeglenkesekvensHendelse']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Hent siste vegnetthendelse (node eller veglenkesekvens)
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async hentSisteVegnettHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegnettNotifikasjon>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.hentSisteVegnettHendelse(tidspunkt, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentSisteVegnettHendelse']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Hent siste vegobjekthendelse
          * @param {number} typeId 
          * @param {string} [tidspunkt] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async hentSisteVegobjektHendelseId(typeId: number, tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
+        async hentSisteVegobjektHendelseId(typeId: number, tidspunkt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegobjektNotifikasjon>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.hentSisteVegobjektHendelseId(typeId, tidspunkt, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentSisteVegobjektHendelseId']?.[localVarOperationServerIndex]?.url;
@@ -1098,7 +1306,21 @@ export const HendelserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Hent vegnett hendelser
+         * @summary Hent veglenkesekvenshendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async hentVeglenkesekvensHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VegnettHendelserSide>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.hentVeglenkesekvensHendelser(fraHendelseId, antall, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['HendelserApi.hentVeglenkesekvensHendelser']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @summary Hent vegnetthendelser (noder og veglenkesekvenser)
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
          * @param {*} [options] Override http request option.
@@ -1112,7 +1334,7 @@ export const HendelserApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
-         * @summary Hent vegobjekt hendelser
+         * @summary Hent vegobjekthendelser
          * @param {number} typeId 
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
@@ -1137,28 +1359,70 @@ export const HendelserApiFactory = function (configuration?: Configuration, base
     return {
         /**
          * 
-         * @summary Hent siste vegnett hendelse Id
+         * @summary Hent nodehendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentNodeHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig): AxiosPromise<VegnettHendelserSide> {
+            return localVarFp.hentNodeHendelser(fraHendelseId, antall, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Hent siste nodehendelse
          * @param {string} [tidspunkt] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        hentSisteVegnettHendelseId(tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.hentSisteVegnettHendelseId(tidspunkt, options).then((request) => request(axios, basePath));
+        hentSisteNodeHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<VegnettNotifikasjon> {
+            return localVarFp.hentSisteNodeHendelse(tidspunkt, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @summary Hent siste vegobjekt hendelse Id
+         * @summary Hent siste veglenkesekvenshendelse
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentSisteVeglenkesekvensHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<VegnettNotifikasjon> {
+            return localVarFp.hentSisteVeglenkesekvensHendelse(tidspunkt, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Hent siste vegnetthendelse (node eller veglenkesekvens)
+         * @param {string} [tidspunkt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentSisteVegnettHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<VegnettNotifikasjon> {
+            return localVarFp.hentSisteVegnettHendelse(tidspunkt, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Hent siste vegobjekthendelse
          * @param {number} typeId 
          * @param {string} [tidspunkt] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        hentSisteVegobjektHendelseId(typeId: number, tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<number> {
+        hentSisteVegobjektHendelseId(typeId: number, tidspunkt?: string, options?: RawAxiosRequestConfig): AxiosPromise<VegobjektNotifikasjon> {
             return localVarFp.hentSisteVegobjektHendelseId(typeId, tidspunkt, options).then((request) => request(axios, basePath));
         },
         /**
          * 
-         * @summary Hent vegnett hendelser
+         * @summary Hent veglenkesekvenshendelser
+         * @param {number} fraHendelseId 
+         * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        hentVeglenkesekvensHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig): AxiosPromise<VegnettHendelserSide> {
+            return localVarFp.hentVeglenkesekvensHendelser(fraHendelseId, antall, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary Hent vegnetthendelser (noder og veglenkesekvenser)
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
          * @param {*} [options] Override http request option.
@@ -1169,7 +1433,7 @@ export const HendelserApiFactory = function (configuration?: Configuration, base
         },
         /**
          * 
-         * @summary Hent vegobjekt hendelser
+         * @summary Hent vegobjekthendelser
          * @param {number} typeId 
          * @param {number} [fraHendelseId] 
          * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
@@ -1191,19 +1455,56 @@ export const HendelserApiFactory = function (configuration?: Configuration, base
 export class HendelserApi extends BaseAPI {
     /**
      * 
-     * @summary Hent siste vegnett hendelse Id
+     * @summary Hent nodehendelser
+     * @param {number} fraHendelseId 
+     * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof HendelserApi
+     */
+    public hentNodeHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig) {
+        return HendelserApiFp(this.configuration).hentNodeHendelser(fraHendelseId, antall, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Hent siste nodehendelse
      * @param {string} [tidspunkt] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof HendelserApi
      */
-    public hentSisteVegnettHendelseId(tidspunkt?: string, options?: RawAxiosRequestConfig) {
-        return HendelserApiFp(this.configuration).hentSisteVegnettHendelseId(tidspunkt, options).then((request) => request(this.axios, this.basePath));
+    public hentSisteNodeHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig) {
+        return HendelserApiFp(this.configuration).hentSisteNodeHendelse(tidspunkt, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
      * 
-     * @summary Hent siste vegobjekt hendelse Id
+     * @summary Hent siste veglenkesekvenshendelse
+     * @param {string} [tidspunkt] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof HendelserApi
+     */
+    public hentSisteVeglenkesekvensHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig) {
+        return HendelserApiFp(this.configuration).hentSisteVeglenkesekvensHendelse(tidspunkt, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Hent siste vegnetthendelse (node eller veglenkesekvens)
+     * @param {string} [tidspunkt] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof HendelserApi
+     */
+    public hentSisteVegnettHendelse(tidspunkt?: string, options?: RawAxiosRequestConfig) {
+        return HendelserApiFp(this.configuration).hentSisteVegnettHendelse(tidspunkt, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Hent siste vegobjekthendelse
      * @param {number} typeId 
      * @param {string} [tidspunkt] 
      * @param {*} [options] Override http request option.
@@ -1216,7 +1517,20 @@ export class HendelserApi extends BaseAPI {
 
     /**
      * 
-     * @summary Hent vegnett hendelser
+     * @summary Hent veglenkesekvenshendelser
+     * @param {number} fraHendelseId 
+     * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof HendelserApi
+     */
+    public hentVeglenkesekvensHendelser(fraHendelseId: number, antall?: number, options?: RawAxiosRequestConfig) {
+        return HendelserApiFp(this.configuration).hentVeglenkesekvensHendelser(fraHendelseId, antall, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @summary Hent vegnetthendelser (noder og veglenkesekvenser)
      * @param {number} [fraHendelseId] 
      * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000
      * @param {*} [options] Override http request option.
@@ -1229,7 +1543,7 @@ export class HendelserApi extends BaseAPI {
 
     /**
      * 
-     * @summary Hent vegobjekt hendelser
+     * @summary Hent vegobjekthendelser
      * @param {number} typeId 
      * @param {number} [fraHendelseId] 
      * @param {number} [antall] Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000

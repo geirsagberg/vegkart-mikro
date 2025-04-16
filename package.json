@@ -23,14 +23,20 @@
   "dependencies": {
     "@duckdb/node-api": "^1.2.2-alpha.18",
     "@tanstack/react-start": "1.115.3",
-    "@types/ol": "^7.0.0",
+    "@turf/helpers": "^7.2.0",
+    "@turf/invariant": "^7.2.0",
+    "@types/geojson": "^7946.0.16",
     "@types/proj4": "^2.5.6",
+    "@types/wellknown": "^0.5.8",
     "axios": "^1.8.4",
     "ol": "^10.5.0",
     "proj4": "^2.15.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "superjson": "^2.2.2",
     "vinxi": "0.5.4",
+    "wellknown": "^0.5.0",
+    "wkx": "^0.5.0",
     "zod": "^3.24.2"
   }
 }
