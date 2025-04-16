@@ -4,6 +4,8 @@ import { createServerFn } from '@tanstack/react-start'
 const NVDB_STREAM_URL =
   'https://nvdbapiles.test.atlas.vegvesen.no/uberiket/api/v1/vegnett/veglenker/stream'
 
+const BATCH_SIZE = 10000
+
 interface DbSyncState {
   table_name: string
   last_veglenkesekvens_id: number
@@ -124,7 +126,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
       )
 
       while (syncStatus.isRunning) {
-        const url = `${NVDB_STREAM_URL}?start=${syncStatus.currentId}-${syncStatus.lastVeglenkenummer}&antall=100`
+        const url = `${NVDB_STREAM_URL}?start=${syncStatus.currentId}-${syncStatus.lastVeglenkenummer}&antall=${BATCH_SIZE}`
 
         // Check if table exists
         const tableExists = await connection.runAndReadAll(`
