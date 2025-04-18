@@ -5,3 +5,5 @@ alwaysApply: true
 ---
 - Read type definitions from imported packages
 - Do not use packages that do not exist in package.json or Node standard library
+- Allow zod types with the same name as the schema
+- Do not use semicolons for JS/TS

@@ -1,52 +1,14 @@
 import { DuckDBInstance } from '@duckdb/node-api'
 import { createServerFn } from '@tanstack/react-start'
-import { z } from 'zod'
-
-const GeoJSONPoint = z.object({
-  type: z.literal('Point'),
-  coordinates: z.tuple([z.number(), z.number()]),
-})
-
-const GeoJSONLineString = z.object({
-  type: z.literal('LineString'),
-  coordinates: z.array(z.tuple([z.number(), z.number()])),
-})
-
-const GeoJSONVeglenkeFeature = z.object({
-  type: z.literal('Feature'),
-  geometry: z.union([GeoJSONPoint, GeoJSONLineString]),
-  properties: z.object({
-    veglenkesekvensId: z.number(),
-    veglenkenummer: z.number(),
-    startposisjon: z.number(),
-    sluttposisjon: z.number(),
-    startdato: z.string().date(),
-    sluttdato: z.string().date().nullish(),
-    kommune: z.number(),
-    lengde: z.number(),
-    isPoint: z.boolean(),
-  }),
-})
-
-const GeoJSONVeglenkeCollection = z.object({
-  type: z.literal('FeatureCollection'),
-  features: z.array(GeoJSONVeglenkeFeature),
-})
-
-type GeoJSONVeglenkeCollection = z.infer<typeof GeoJSONVeglenkeCollection>
-
-interface BoundingBox {
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
-}
+import type { FeatureCollection, Geometry } from 'geojson'
+import { type BoundingBox } from './geojson'
+import { sql } from './sql'
 
 const FEATURE_THRESHOLD = 10000
 
 export const queryVeglenker = createServerFn({ method: 'POST' })
   .validator((data: BoundingBox) => data)
-  .handler(async ({ data }): Promise<GeoJSONVeglenkeCollection> => {
+  .handler(async ({ data }): Promise<Geometry | FeatureCollection> => {
     const { minX, minY, maxX, maxY } = data
     const instance = await DuckDBInstance.fromCache('spatial.db')
     const connection = await instance.connect()
@@ -56,7 +18,7 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
 
       // First get count to decide if we should transform to points
       const countResult = await connection.runAndReadAll(
-        `
+        sql`
         SELECT COUNT(*) as count
         FROM veglenker
         WHERE ST_Intersects(
@@ -69,31 +31,44 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
       )
 
       const rows = countResult.getRowObjects()
-      const count = rows[0]?.count as number | undefined
-      const shouldUsePoints = (count ?? 0) > FEATURE_THRESHOLD
+      const count = (rows[0]?.count as number | undefined) ?? 0
+
+      if (count > 100_000) {
+        return {
+          type: 'FeatureCollection' as const,
+          features: [],
+        }
+      }
+
+      const tooMany = count > FEATURE_THRESHOLD
 
       const result = await connection.runAndReadAll(
-        `
+        sql`
         SELECT
-          json_object(
-            'type', 'Feature',
-            'geometry', ${
-              shouldUsePoints
-                ? 'ST_AsGeoJSON(ST_Centroid(geometri))::json'
-                : 'ST_AsGeoJSON(ST_Force2D(geometri))::json'
+          to_json({
+            type: 'Feature',
+            geometry: ${
+              tooMany
+                ? `ST_AsGeoJSON(ST_Centroid(geometri))`
+                : `ST_AsGeoJSON(ST_Force2D(geometri))`
             },
-            'properties', json_object(
-              'veglenkesekvensId', veglenkesekvensId,
-              'veglenkenummer', veglenkenummer,
-              'startposisjon', startposisjon,
-              'sluttposisjon', sluttposisjon,
-              'startdato', startdato,
-              'sluttdato', sluttdato,
-              'kommune', kommune,
-              'lengde', lengde,
-              'isPoint', ${shouldUsePoints ? 'true' : 'false'}
-            )
-          ) as feature
+            properties: {
+              ${
+                tooMany
+                  ? `isPoint: true`
+                  : `
+                veglenkesekvensId: veglenkesekvensId,
+                veglenkenummer: veglenkenummer,
+                startposisjon: startposisjon,
+                sluttposisjon: sluttposisjon,
+                startdato: startdato,
+                sluttdato: sluttdato,
+                kommune: kommune,
+                lengde: lengde,
+                `
+              }
+            }
+          }) as feature
         FROM veglenker
         WHERE ST_Intersects(
           geometri,
@@ -105,15 +80,11 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
       )
       const features = result
         .getRowObjectsJson()
-        .map((row) =>
-          GeoJSONVeglenkeFeature.parse(JSON.parse(row.feature as string)),
-        )
-      const featureCollection: GeoJSONVeglenkeCollection = {
-        type: 'FeatureCollection',
+        .map((row) => JSON.parse(row.feature as string))
+      return {
+        type: 'FeatureCollection' as const,
         features,
       }
-
-      return featureCollection
     } finally {
       // No need to close - DuckDB handles cleanup
     }
