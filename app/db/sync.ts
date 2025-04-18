@@ -55,7 +55,7 @@ async function ensureSyncState(connection: any) {
       table_name VARCHAR PRIMARY KEY,
       last_veglenkesekvens_id INTEGER NOT NULL DEFAULT 0,
       last_veglenkenummer INTEGER NOT NULL DEFAULT 0,
-      last_sync TIMESTAMP
+      last_sync TIMESTAMPTZ
     )
   `)
 }
@@ -148,7 +148,10 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
               ST_GeomFromText(geometri.wkt) as geometri,
               kommune,
               lengde
-            FROM read_ndjson('${url}')
+            FROM read_ndjson('${url}');
+
+            ALTER TABLE veglenker
+            ADD PRIMARY KEY (veglenkesekvensId, veglenkenummer);
           `)
         } else {
           // Insert into existing table
@@ -165,6 +168,15 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
               kommune,
               lengde
             FROM read_ndjson('${url}')
+            ON CONFLICT (veglenkesekvensId, veglenkenummer)
+            DO UPDATE SET
+              startposisjon = EXCLUDED.startposisjon,
+              sluttposisjon = EXCLUDED.sluttposisjon,
+              startdato = EXCLUDED.startdato,
+              sluttdato = EXCLUDED.sluttdato,
+              geometri = ST_GeomFromText(EXCLUDED.geometri.wkt),
+              kommune = EXCLUDED.kommune,
+              lengde = EXCLUDED.lengde
           `)
         }
 

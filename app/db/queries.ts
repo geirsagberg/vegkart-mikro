@@ -57,7 +57,7 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
       // First get count to decide if we should transform to points
       const countResult = await connection.runAndReadAll(
         `
-        SELECT COUNT(*)::INTEGER as count
+        SELECT COUNT(*) as count
         FROM veglenker
         WHERE ST_Intersects(
           geometri,
