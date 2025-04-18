@@ -57,6 +57,15 @@ function Home() {
 
   useEffect(() => {
     fetchSyncState()
+    // Check if sync is running
+    getSyncProgress()
+      .then((progress) => {
+        setIsSyncing(!progress.isComplete)
+        setSyncProgress(progress)
+      })
+      .catch((error) => {
+        console.error('Failed to fetch sync progress:', error)
+      })
   }, [fetchSyncState])
 
   useEffect(() => {
