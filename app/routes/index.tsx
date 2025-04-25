@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MapRef } from '../components/Map'
 import { VegkartMap } from '../components/Map'
-import { getSyncProgress, getSyncState, startSync, stopSync } from '../db/sync'
+import { getSyncProgress, startSync, stopSync } from '../db/sync'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -20,30 +20,33 @@ interface SyncProgress {
   lastVeglenkenummer: number
   batchCount: number
   isComplete: boolean
+  error: string | null
+  completionMessage: string | null
 }
 
 function Home() {
-  const [syncState, setSyncState] = useState<DbSyncState[]>([])
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [status, setStatus] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const mapRef = useRef<MapRef>(null)
   const pollInterval = useRef<NodeJS.Timeout>(null)
-
-  const fetchSyncState = useCallback(async () => {
-    try {
-      const state = await getSyncState()
-      setSyncState(state)
-    } catch (error) {
-      console.error('Failed to fetch sync state:', error)
-    }
-  }, [])
 
   const pollProgress = useCallback(async () => {
     try {
       const progress = await getSyncProgress()
       setSyncProgress(progress)
+
+      // Update error and status based on progress information
+      if (progress.error) {
+        setError(progress.error)
+      }
+
+      if (progress.completionMessage) {
+        setStatus(progress.completionMessage)
+      }
+
       if (progress.isComplete) {
         setIsSyncing(false)
         if (pollInterval.current) {
@@ -56,17 +59,8 @@ function Home() {
   }, [])
 
   useEffect(() => {
-    fetchSyncState()
-    // Check if sync is running
-    getSyncProgress()
-      .then((progress) => {
-        setIsSyncing(!progress.isComplete)
-        setSyncProgress(progress)
-      })
-      .catch((error) => {
-        console.error('Failed to fetch sync progress:', error)
-      })
-  }, [fetchSyncState])
+    pollProgress()
+  }, [pollProgress])
 
   useEffect(() => {
     if (isSyncing) {
@@ -83,6 +77,7 @@ function Home() {
   const startSyncHandler = useCallback(async () => {
     setIsSyncing(true)
     setError(null)
+    setStatus(null)
     setSyncProgress(null)
 
     try {
@@ -142,6 +137,9 @@ function Home() {
                 </>
               )}
             </div>
+          )}
+          {status && (
+            <div className="text-sm text-success font-medium">{status}</div>
           )}
           {error && <div className="text-sm text-error">Error: {error}</div>}
           <div className="flex gap-2">

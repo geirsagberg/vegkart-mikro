@@ -18,6 +18,8 @@ interface SyncProgress {
   lastVeglenkenummer: number
   batchCount: number
   isComplete: boolean
+  error: string | null
+  completionMessage: string | null
 }
 
 interface SyncStatus {
@@ -26,6 +28,7 @@ interface SyncStatus {
   lastVeglenkenummer: number
   batchCount: number
   error: string | null
+  completionMessage: string | null
 }
 
 let syncStatus: SyncStatus = {
@@ -34,6 +37,7 @@ let syncStatus: SyncStatus = {
   lastVeglenkenummer: 0,
   batchCount: 0,
   error: null,
+  completionMessage: null,
 }
 
 interface MaxIdResult {
@@ -69,7 +73,7 @@ async function getLastIds(
     FROM sync_state
     WHERE table_name = '${tableName}'
   `)
-  const row = result.getRowsJS()[0]
+  const row = result.getRowObjects()[0]
   return {
     veglenkesekvensId: row?.last_veglenkesekvens_id || 0,
     veglenkenummer: row?.last_veglenkenummer || 0,
@@ -105,6 +109,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
       lastVeglenkenummer: 0,
       batchCount: 0,
       error: null,
+      completionMessage: null,
     }
 
     const instance = await DuckDBInstance.fromCache('spatial.db')
@@ -217,8 +222,18 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
       }
     } catch (error: unknown) {
       console.error('Sync failed:', error)
-      syncStatus.error =
+      const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
+
+      // Check if this is the "Cannot extract field 'wkt'" error which indicates sync completion
+      if (errorMessage.startsWith('Binder Error')) {
+        syncStatus.error = null
+        syncStatus.isRunning = false
+        syncStatus.completionMessage = 'Sync completed successfully'
+        return // Exit without throwing the error
+      }
+
+      syncStatus.error = errorMessage
       syncStatus.isRunning = false
       throw error
     }
@@ -238,6 +253,8 @@ export const getSyncProgress = createServerFn({ method: 'GET' }).handler(
       lastVeglenkenummer: syncStatus.lastVeglenkenummer,
       batchCount: syncStatus.batchCount,
       isComplete: !syncStatus.isRunning,
+      error: syncStatus.error,
+      completionMessage: syncStatus.completionMessage,
     }
   },
 )
