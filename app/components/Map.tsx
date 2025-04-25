@@ -118,6 +118,43 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
         })
         lineStringSource.current.clear()
         pointSource.current.clear()
+
+        // If result has message property, display it in the popup
+        if ('message' in result && result.message) {
+          popupRef.current!.innerHTML = `
+            <div class="p-4 bg-yellow-50 border border-yellow-300 rounded shadow">
+              <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-600 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div class="text-base font-medium text-yellow-700">${result.message}</div>
+              </div>
+            </div>
+          `
+          // Position the popup in the top-center of the map
+          const center = map.getView().getCenter()
+          const size = map.getSize()
+          if (
+            center &&
+            size &&
+            center[0] !== undefined &&
+            center[1] !== undefined &&
+            size[1] !== undefined
+          ) {
+            const topCenter = [center[0], center[1] + size[1] / 4] as [
+              number,
+              number,
+            ]
+            popupOverlay.current!.setPosition(topCenter)
+          } else {
+            popupOverlay.current!.setPosition(map.getView().getCenter())
+          }
+          return
+        } else {
+          // Hide popup if it was showing
+          popupOverlay.current!.setPosition(undefined)
+        }
+
         const features = new GeoJSON().readFeatures(result)
         if (features.length > 0 && features[0]?.get('isPoint')) {
           pointSource.current.addFeatures(features)
@@ -148,9 +185,13 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
     // Create popup overlay
     popupOverlay.current = new Overlay({
       element: popupRef.current!,
-      positioning: 'top-right',
-      offset: [32, -32],
-      autoPan: true,
+      positioning: 'top-center',
+      offset: [0, 0],
+      autoPan: {
+        animation: {
+          duration: 250,
+        },
+      },
     })
 
     const map = new Map({
@@ -338,7 +379,14 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
   return (
     <>
       <div ref={mapRef} className="w-full h-full" />
-      <div ref={popupRef} className="absolute z-10 pointer-events-none" />
+      <div
+        ref={popupRef}
+        className="absolute z-10 pointer-events-none max-w-md"
+        style={{
+          filter:
+            'drop-shadow(0 4px 3px rgb(0 0 0 / 0.07)) drop-shadow(0 2px 2px rgb(0 0 0 / 0.06))',
+        }}
+      />
     </>
   )
 })

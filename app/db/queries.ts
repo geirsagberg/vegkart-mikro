@@ -6,19 +6,25 @@ import { sql } from './sql'
 
 const FEATURE_THRESHOLD = 10000
 
+// Custom type to include message property
+interface FeatureCollectionWithMessage extends FeatureCollection {
+  message?: string
+}
+
 export const queryVeglenker = createServerFn({ method: 'POST' })
   .validator((data: BoundingBox) => data)
-  .handler(async ({ data }): Promise<Geometry | FeatureCollection> => {
-    const { minX, minY, maxX, maxY } = data
-    const instance = await DuckDBInstance.fromCache('spatial.db')
-    const connection = await instance.connect()
+  .handler(
+    async ({ data }): Promise<Geometry | FeatureCollectionWithMessage> => {
+      const { minX, minY, maxX, maxY } = data
+      const instance = await DuckDBInstance.fromCache('spatial.db')
+      const connection = await instance.connect()
 
-    try {
-      await connection.run('INSTALL spatial; LOAD spatial;')
+      try {
+        await connection.run('INSTALL spatial; LOAD spatial;')
 
-      // First get count to decide if we should transform to points
-      const countResult = await connection.runAndReadAll(
-        sql`
+        // First get count to decide if we should transform to points
+        const countResult = await connection.runAndReadAll(
+          sql`
         SELECT COUNT(*) as count
         FROM veglenker
         WHERE ST_Intersects(
@@ -27,23 +33,24 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
         )
           AND sluttdato IS NULL
       `,
-        [minX, minY, maxX, maxY],
-      )
+          [minX, minY, maxX, maxY],
+        )
 
-      const rows = countResult.getRowObjects()
-      const count = (rows[0]?.count as number | undefined) ?? 0
+        const rows = countResult.getRowObjects()
+        const count = (rows[0]?.count as number | undefined) ?? 0
 
-      if (count > 100_000) {
-        return {
-          type: 'FeatureCollection' as const,
-          features: [],
+        if (count > 100_000) {
+          return {
+            type: 'FeatureCollection' as const,
+            features: [],
+            message: 'For mange veglenker, zoom inn for å se detaljer',
+          }
         }
-      }
 
-      const tooMany = count > FEATURE_THRESHOLD
+        const tooMany = count > FEATURE_THRESHOLD
 
-      const result = await connection.runAndReadAll(
-        sql`
+        const result = await connection.runAndReadAll(
+          sql`
         SELECT
           to_json({
             type: 'Feature',
@@ -76,16 +83,17 @@ export const queryVeglenker = createServerFn({ method: 'POST' })
         )
           AND sluttdato IS NULL
       `,
-        [minX, minY, maxX, maxY],
-      )
-      const features = result
-        .getRowObjectsJson()
-        .map((row) => JSON.parse(row.feature as string))
-      return {
-        type: 'FeatureCollection' as const,
-        features,
+          [minX, minY, maxX, maxY],
+        )
+        const features = result
+          .getRowObjectsJson()
+          .map((row) => JSON.parse(row.feature as string))
+        return {
+          type: 'FeatureCollection' as const,
+          features,
+        }
+      } finally {
+        // No need to close - DuckDB handles cleanup
       }
-    } finally {
-      // No need to close - DuckDB handles cleanup
-    }
-  })
+    },
+  )
