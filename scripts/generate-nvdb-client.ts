@@ -2,7 +2,7 @@ import { execSync } from 'child_process'
 import { mkdirSync, rmSync } from 'fs'
 import { join } from 'path'
 
-const SPEC_PATH = join(process.cwd(), 'nvdb-api.yaml')
+const SPEC_PATH = join(process.cwd(), 'nvdb-api.json')
 const OUTPUT_DIR = join(process.cwd(), 'app', 'lib', 'nvdb')
 
 // Clean and recreate output directory

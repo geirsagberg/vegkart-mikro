@@ -1,0 +1,2810 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "NVDB API Les Uberiket",
+    "description": "Dette API-et brukes til å lese uberikede hendelser, vegobjekter og vegnett. Les mer om bruk av API-et på https://nvdb.atlas.vegvesen.no/produkter/nvdbapil/v1/Uberiket",
+    "contact": {
+      "name": "Nasjonal vegdatabank (NVDB)",
+      "url": "https://nvdb.atlas.vegvesen.no/",
+      "email": "nvdb@vegvesen.no"
+    },
+    "license": {
+      "name": "NLOD 1.0",
+      "url": "https://data.norge.no/nlod/no/1.0"
+    },
+    "version": "v1"
+  },
+  "servers": [{ "url": "/uberiket", "description": "Default Server URL" }],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/api/v1/vegobjekter/{typeId}": {
+      "get": {
+        "tags": ["Vegobjekter"],
+        "summary": "Hent vegobjekter",
+        "operationId": "hentVegobjekter",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "ider",
+            "in": "query",
+            "description": "Hent kun vegobjekter med angitte IDer",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "type": "integer", "format": "int64" },
+              "uniqueItems": true
+            }
+          },
+          {
+            "name": "inkluder",
+            "in": "query",
+            "description": "Velg hvilke data som skal inkluderes i responsen",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/InkluderIVegobjekt" },
+              "uniqueItems": true
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent vegobjekter etterfølgende [vegobjektId]-[versjon]",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/VegobjekterSide" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegobjekter/{typeId}/{vegobjektId}/{versjon}": {
+      "get": {
+        "tags": ["Vegobjekter"],
+        "summary": "Hent vegobjekt",
+        "operationId": "hentVegobjekt",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "vegobjektId",
+            "in": "path",
+            "description": "Vegobjekt ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "versjon",
+            "in": "path",
+            "description": "Versjon av vegobjektet",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "inkluder",
+            "in": "query",
+            "description": "Velg hvilke data som skal inkluderes i responsen",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/InkluderIVegobjekt" },
+              "uniqueItems": true
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Vegobjekt" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegobjekter/{typeId}/{vegobjektId}/historisk": {
+      "get": {
+        "tags": ["Vegobjekter"],
+        "summary": "Hent vegobjekt på dato (ukorrigert)",
+        "operationId": "hentVegobjektHistorisk",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "vegobjektId",
+            "in": "path",
+            "description": "Vegobjekt ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "dato",
+            "in": "query",
+            "description": "Dato å hente vegobjekt fra",
+            "required": true,
+            "schema": { "type": "string", "format": "date" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Vegobjekt" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegobjekter/{typeId}/stream": {
+      "get": {
+        "tags": ["Vegobjekter"],
+        "summary": "Strøm aktive vegobjekter som NDJSON.",
+        "operationId": "hentVegobjekterStream",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall vegobjekter som skal hentes. Fra 1 til 10000, standard 1000.",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent vegobjekter etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Vegobjekt" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/veglenkesekvenser": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Hent veglenkesekvenser",
+        "operationId": "hentVeglenkesekvenser",
+        "parameters": [
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "ider",
+            "in": "query",
+            "description": "Hent kun veglenkesekvenser med angitte IDer",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "type": "integer", "format": "int64" },
+              "uniqueItems": true
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent veglenkesekvenser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VeglenkesekvenserSide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/veglenkesekvenser/{veglenkesekvensId}": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Hent veglenkesekvens",
+        "operationId": "hentVeglenkesekvens",
+        "parameters": [
+          {
+            "name": "veglenkesekvensId",
+            "in": "path",
+            "description": "ID for veglenkesekvensen",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/Veglenkesekvens" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/veglenkesekvenser/stream": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Strøm veglenkesekvenser som NDJSON.",
+        "operationId": "streamVeglenkesekvenser",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent veglenkesekvenser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall veglenkesekvenser som skal hentes. Fra 1 til 10000, standard 1000.",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Veglenkesekvens" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/veglenker/stream": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Strøm veglenker som NDJSON.",
+        "operationId": "streamVeglenker",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent veglenker etterfølgende [veglenkesekvensId]-[veglenkenummer]",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "ider",
+            "in": "query",
+            "description": "Hent kun veglenker fra angitte veglenkesekvens-IDer",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "type": "integer", "format": "int64" },
+              "uniqueItems": true
+            }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall veglenker som skal hentes. Fra 1 til 10000, standard 1000.",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/VeglenkeMedId" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/noder": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Hent noder",
+        "operationId": "hentNoder",
+        "parameters": [
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "ider",
+            "in": "query",
+            "description": "Hent kun noder med angitte IDer",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": { "type": "integer", "format": "int64" },
+              "uniqueItems": true
+            }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent noder etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/NoderSide" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/vegnett/noder/{nodeId}": {
+      "get": {
+        "tags": ["Vegnett"],
+        "summary": "Hent node",
+        "operationId": "hentNode",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "in": "path",
+            "description": "ID for noden",
+            "required": true,
+            "schema": { "type": "integer", "format": "int64" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": { "schema": { "$ref": "#/components/schemas/Node" } }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/vegobjekter/{typeId}": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent vegobjekthendelser",
+        "operationId": "hentVegobjektHendelser",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VegobjektHendelserSide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/vegobjekter/{typeId}/stream": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Strøm vegobjekthendelser som NDJSON",
+        "operationId": "streamVegobjekthendelser",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall hendelser som strømmes om gangen. Standard 1000, maks 10000",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VegobjektDeltaHendelse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/vegobjekter/{typeId}/siste": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent siste vegobjekthendelse",
+        "operationId": "hentSisteVegobjektHendelseId",
+        "parameters": [
+          {
+            "name": "typeId",
+            "in": "path",
+            "description": "Vegobjekttype ID",
+            "required": true,
+            "schema": { "type": "integer", "format": "int32" }
+          },
+          {
+            "name": "tidspunkt",
+            "in": "query",
+            "description": "Tidspunkt å hente siste hendelse fra",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VegobjektNotifikasjon"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/vegnett": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent vegnetthendelser (noder og veglenkesekvenser)",
+        "operationId": "hentVegnettHendelser",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VegnettHendelserSide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/vegnett/siste": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent siste vegnetthendelse (node eller veglenkesekvens)",
+        "operationId": "hentSisteVegnettHendelse",
+        "parameters": [
+          {
+            "name": "tidspunkt",
+            "in": "query",
+            "description": "Tidspunkt å hente siste hendelse fra",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/VegnettNotifikasjon" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/veglenkesekvenser": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent veglenkesekvenshendelser",
+        "operationId": "hentVeglenkesekvensHendelser",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VegnettHendelserSide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/veglenkesekvenser/stream": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Strøm veglenkesekvenshendelser som NDJSON",
+        "operationId": "streamVeglenkesekvensHendelser",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall hendelser som strømmes om gangen. Standard 1000, maks 10000",
+            "required": false,
+            "schema": { "type": "integer", "format": "int32" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VegnettDeltaHendelse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/veglenkesekvenser/siste": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent siste veglenkesekvenshendelse",
+        "operationId": "hentSisteVeglenkesekvensHendelse",
+        "parameters": [
+          {
+            "name": "tidspunkt",
+            "in": "query",
+            "description": "Tidspunkt å hente siste hendelse fra",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/VegnettNotifikasjon" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/noder": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent nodehendelser",
+        "operationId": "hentNodeHendelser",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "description": "Hent hendelser etterfølgende denne IDen",
+            "required": false,
+            "schema": { "type": "integer", "format": "int64" }
+          },
+          {
+            "name": "antall",
+            "in": "query",
+            "description": "Antall som skal returneres i respons. Må være et heltall mellom 1 og 1000",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "maximum": 1000,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/VegnettHendelserSide"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/hendelser/noder/siste": {
+      "get": {
+        "tags": ["Hendelser"],
+        "summary": "Hent siste nodehendelse",
+        "operationId": "hentSisteNodeHendelse",
+        "parameters": [
+          {
+            "name": "tidspunkt",
+            "in": "query",
+            "description": "Tidspunkt å hente siste hendelse fra",
+            "required": false,
+            "schema": { "type": "string", "format": "date-time" }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetail" }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/VegnettNotifikasjon" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ProblemDetail": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "status": { "type": "integer", "format": "int32" },
+          "detail": { "type": "string" },
+          "instance": { "type": "string", "format": "uri" },
+          "properties": {
+            "type": "object",
+            "additionalProperties": { "type": "object" }
+          }
+        }
+      },
+      "InkluderIVegobjekt": {
+        "type": "string",
+        "enum": [
+          "gyldighetsperiode",
+          "egenskaper",
+          "stedfesting",
+          "barn",
+          "alle",
+          "minimum"
+        ]
+      },
+      "BinaerEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": {
+              "format": { "type": "string" },
+              "ressursId": { "type": "integer", "format": "int32" }
+            }
+          }
+        ],
+        "required": ["format"]
+      },
+      "BoolskEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          { "type": "object", "properties": { "verdi": { "type": "boolean" } } }
+        ],
+        "required": ["verdi"]
+      },
+      "DatoEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": { "verdi": { "type": "string", "format": "date" } }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "EgenskapVerdi": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "BinaerEgenskap": "#/components/schemas/BinaerEgenskap",
+            "BoolskEgenskap": "#/components/schemas/BoolskEgenskap",
+            "DatoEgenskap": "#/components/schemas/DatoEgenskap",
+            "EnumEgenskap": "#/components/schemas/EnumEgenskap",
+            "FlyttallEgenskap": "#/components/schemas/FlyttallEgenskap",
+            "GeometriEgenskap": "#/components/schemas/GeometriEgenskap",
+            "HeltallEgenskap": "#/components/schemas/HeltallEgenskap",
+            "KortDatoEgenskap": "#/components/schemas/KortDatoEgenskap",
+            "ListeEgenskap": "#/components/schemas/ListeEgenskap",
+            "StrukturEgenskap": "#/components/schemas/StrukturEgenskap",
+            "TekstEgenskap": "#/components/schemas/TekstEgenskap",
+            "TidEgenskap": "#/components/schemas/TidEgenskap"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      },
+      "EnumEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": { "verdi": { "type": "integer", "format": "int32" } }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "FlyttallEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": { "verdi": { "type": "number", "format": "double" } }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "GeometriEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": {
+              "verdi": { "$ref": "#/components/schemas/Geometristruktur" }
+            }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "GeometriKvalitet": {
+        "type": "object",
+        "properties": {
+          "malemetode": { "type": "integer", "format": "int32" },
+          "malemetodeHoyde": { "type": "integer", "format": "int32" },
+          "noyaktighet": { "type": "integer", "format": "int32" },
+          "noyaktighetHoyde": { "type": "integer", "format": "int32" },
+          "synbarhet": { "type": "integer", "format": "int32" },
+          "maksimaltAvvik": { "type": "integer", "format": "int32" },
+          "datafangstmetode": { "type": "string" },
+          "datafangstmetodeHoyde": { "type": "string" }
+        }
+      },
+      "Geometristruktur": {
+        "type": "object",
+        "properties": {
+          "wkt": { "type": "string" },
+          "srid": { "$ref": "#/components/schemas/SRID" },
+          "lengde": { "type": "number", "format": "double" },
+          "datafangstdato": { "type": "string", "format": "date" },
+          "temakode": { "type": "integer", "format": "int32" },
+          "medium": { "type": "integer", "format": "int32" },
+          "kommune": { "type": "integer", "format": "int32" },
+          "hoydereferanse": { "type": "integer", "format": "int32" },
+          "sosiNavn": { "type": "string" },
+          "referansegeometri": { "type": "boolean" },
+          "verifiseringsdato": { "type": "string", "format": "date" },
+          "oppdateringsdato": { "type": "string", "format": "date" },
+          "prosesshistorikk": { "type": "string" },
+          "kvalitet": { "$ref": "#/components/schemas/GeometriKvalitet" }
+        },
+        "required": ["srid", "wkt"]
+      },
+      "Gyldighetsperiode": {
+        "type": "object",
+        "properties": {
+          "startdato": { "type": "string", "format": "date" },
+          "sluttdato": { "type": "string", "format": "date" }
+        },
+        "required": ["startdato"]
+      },
+      "HeltallEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": { "verdi": { "type": "integer", "format": "int64" } }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "KortDatoEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": {
+              "verdi": { "type": "string", "example": "--03-22" }
+            }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "ListeEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": {
+              "verdier": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/EgenskapVerdi" }
+              }
+            }
+          }
+        ],
+        "required": ["verdier"]
+      },
+      "NesteSide": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "description": "Token som brukes for å få neste side"
+          },
+          "href": {
+            "type": "string",
+            "description": "Komplett url for neste side"
+          }
+        },
+        "required": ["href", "start"]
+      },
+      "Retning": { "type": "string", "enum": ["MED", "MOT"] },
+      "SRID": {
+        "type": "string",
+        "enum": ["5972", "5973", "5974", "5975", "4326"]
+      },
+      "SideMetadata": {
+        "type": "object",
+        "properties": {
+          "returnert": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Antallet objekter som ble returnert i denne responsen"
+          },
+          "sidestorrelse": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Maks antall objekter som blir returnert per side"
+          },
+          "neste": {
+            "$ref": "#/components/schemas/NesteSide",
+            "description": "Informasjon om neste side, utelatt dersom man spør på et endepunkt som gjelder et spesifikt vegobjekt. Når resultatsettet er tomt vil neste side være tom og samme start token vil returneres for påfølgende side."
+          }
+        },
+        "required": ["returnert", "sidestorrelse"]
+      },
+      "Sideposisjon": {
+        "type": "string",
+        "enum": ["V", "H", "VH", "M", "K", "MV", "MH", "VT", "HT", "R", "L"]
+      },
+      "Stedfesting": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "StedfestingLinjer": "#/components/schemas/StedfestingLinjer",
+            "StedfestingPunkter": "#/components/schemas/StedfestingPunkter",
+            "StedfestingSving": "#/components/schemas/StedfestingSving",
+            "StedfestingMangler": "#/components/schemas/StedfestingMangler"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      },
+      "StedfestingLinje": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "startposisjon": { "type": "number", "format": "double" },
+          "sluttposisjon": { "type": "number", "format": "double" },
+          "retning": { "$ref": "#/components/schemas/Retning" },
+          "sideposisjon": { "$ref": "#/components/schemas/Sideposisjon" },
+          "kjorefelt": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["id", "kjorefelt", "sluttposisjon", "startposisjon"]
+      },
+      "StedfestingLinjer": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Stedfesting" },
+          {
+            "type": "object",
+            "properties": {
+              "linjer": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/StedfestingLinje" }
+              },
+              "isEmpty": { "type": "boolean" },
+              "size": { "type": "integer", "format": "int32" },
+              "first": { "$ref": "#/components/schemas/StedfestingLinje" },
+              "last": { "$ref": "#/components/schemas/StedfestingLinje" }
+            }
+          }
+        ],
+        "required": ["isEmpty", "linjer", "size"]
+      },
+      "StedfestingMangler": {
+        "allOf": [{ "$ref": "#/components/schemas/Stedfesting" }]
+      },
+      "StedfestingPunkt": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "posisjon": { "type": "number", "format": "double" },
+          "retning": { "$ref": "#/components/schemas/Retning" },
+          "sideposisjon": { "$ref": "#/components/schemas/Sideposisjon" },
+          "kjorefelt": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": ["id", "kjorefelt", "posisjon"]
+      },
+      "StedfestingPunkter": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Stedfesting" },
+          {
+            "type": "object",
+            "properties": {
+              "punkter": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/StedfestingPunkt" },
+                "uniqueItems": true
+              },
+              "isEmpty": { "type": "boolean" },
+              "size": { "type": "integer", "format": "int32" }
+            }
+          }
+        ],
+        "required": ["isEmpty", "punkter", "size"],
+        "uniqueItems": true
+      },
+      "StedfestingSving": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Stedfesting" },
+          {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "format": "int64" },
+              "startpunkt": { "$ref": "#/components/schemas/StedfestingPunkt" },
+              "sluttpunkt": { "$ref": "#/components/schemas/StedfestingPunkt" }
+            }
+          }
+        ],
+        "required": ["id", "sluttpunkt", "startpunkt"]
+      },
+      "StrukturEgenskap": {
+        "allOf": [{ "$ref": "#/components/schemas/EgenskapVerdi" }]
+      },
+      "TekstEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          { "type": "object", "properties": { "verdi": { "type": "string" } } }
+        ],
+        "required": ["verdi"]
+      },
+      "TidEgenskap": {
+        "allOf": [
+          { "$ref": "#/components/schemas/EgenskapVerdi" },
+          {
+            "type": "object",
+            "properties": {
+              "verdi": { "type": "string", "example": "14:30:00" }
+            }
+          }
+        ],
+        "required": ["verdi"]
+      },
+      "Vegobjekt": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "versjon": { "type": "integer", "format": "int32" },
+          "typeId": { "type": "integer", "format": "int32" },
+          "gyldighetsperiode": {
+            "$ref": "#/components/schemas/Gyldighetsperiode",
+            "description": "Tilstede dersom inkluder=alle|gyldighetsperiode"
+          },
+          "egenskaper": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EgenskapVerdi"
+            },
+            "description": "Tilstede dersom inkluder=alle|egenskaper"
+          },
+          "barn": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/VegobjektId" },
+              "uniqueItems": true
+            },
+            "description": "Tilstede dersom inkluder=alle|barn"
+          },
+          "stedfesting": {
+            "$ref": "#/components/schemas/Stedfesting",
+            "description": "Tilstede dersom inkluder=alle|stedfesting og objektet er stedfestet på vegnettet"
+          },
+          "sistEndret": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "sistEndret", "typeId", "versjon"]
+      },
+      "VegobjektId": {
+        "type": "object",
+        "properties": { "value": { "type": "integer", "format": "int64" } },
+        "required": ["value"]
+      },
+      "VegobjekterSide": {
+        "type": "object",
+        "properties": {
+          "vegobjekter": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Vegobjekt" }
+          },
+          "metadata": { "$ref": "#/components/schemas/SideMetadata" }
+        },
+        "required": ["metadata", "vegobjekter"]
+      },
+      "Detaljniva": {
+        "type": "string",
+        "enum": ["VEGTRASE", "KJOREBANE", "KJOREFELT", "VEGTRASE_OG_KJOREBANE"]
+      },
+      "Malemetode": { "type": "string", "enum": ["METRERT", "GEOMETRISK"] },
+      "Topologiniva": {
+        "type": "string",
+        "enum": ["VEGTRASE", "KJOREBANE", "KJOREFELT"]
+      },
+      "TypeVeg": {
+        "type": "string",
+        "enum": [
+          "KANALISERT_VEG",
+          "ENKEL_BILVEG",
+          "RAMPE",
+          "RUNDKJORING",
+          "BILFERJE",
+          "PASSASJERFERJE",
+          "GANG_OG_SYKKELVEG",
+          "SYKKELVEG",
+          "GANGVEG",
+          "GAGATE",
+          "FORTAU",
+          "TRAPP",
+          "GANGFELT",
+          "GATETUN",
+          "TRAKTORVEG",
+          "STI",
+          "ANNET"
+        ]
+      },
+      "Veglenke": {
+        "type": "object",
+        "properties": {
+          "nummer": { "type": "integer", "format": "int32" },
+          "gyldighetsperiode": {
+            "$ref": "#/components/schemas/Gyldighetsperiode"
+          },
+          "konnektering": { "type": "boolean" },
+          "topologiniva": { "$ref": "#/components/schemas/Topologiniva" },
+          "maledato": { "type": "string", "format": "date" },
+          "malemetode": { "$ref": "#/components/schemas/Malemetode" },
+          "detaljniva": { "$ref": "#/components/schemas/Detaljniva" },
+          "typeVeg": { "$ref": "#/components/schemas/TypeVeg" },
+          "superstedfesting": {
+            "$ref": "#/components/schemas/StedfestingLinje"
+          },
+          "startport": { "type": "integer", "format": "int32" },
+          "sluttport": { "type": "integer", "format": "int32" },
+          "kommune": { "type": "integer", "format": "int32" },
+          "geometri": { "$ref": "#/components/schemas/Geometristruktur" },
+          "lengde": { "type": "number", "format": "double" },
+          "feltoversikt": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": [
+          "detaljniva",
+          "feltoversikt",
+          "geometri",
+          "gyldighetsperiode",
+          "kommune",
+          "konnektering",
+          "lengde",
+          "malemetode",
+          "nummer",
+          "sluttport",
+          "startport",
+          "topologiniva",
+          "typeVeg"
+        ]
+      },
+      "Veglenkesekvens": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "porter": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Veglenkesekvensport" }
+          },
+          "veglenker": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Veglenke" }
+          },
+          "lengde": { "type": "number", "format": "double" },
+          "sistEndret": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "lengde", "porter", "sistEndret", "veglenker"]
+      },
+      "VeglenkesekvenserSide": {
+        "type": "object",
+        "properties": {
+          "veglenkesekvenser": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Veglenkesekvens" }
+          },
+          "metadata": { "$ref": "#/components/schemas/SideMetadata" }
+        },
+        "required": ["metadata", "veglenkesekvenser"]
+      },
+      "Veglenkesekvensport": {
+        "type": "object",
+        "properties": {
+          "nummer": { "type": "integer", "format": "int32" },
+          "nodeId": { "type": "integer", "format": "int64" },
+          "nodePortNummer": { "type": "integer", "format": "int32" },
+          "posisjon": { "type": "number", "format": "double" }
+        },
+        "required": ["nodeId", "nodePortNummer", "nummer", "posisjon"]
+      },
+      "VeglenkeMedId": {
+        "type": "object",
+        "properties": {
+          "veglenkesekvensId": { "type": "integer", "format": "int64" },
+          "veglenkenummer": { "type": "integer", "format": "int32" },
+          "gyldighetsperiode": {
+            "$ref": "#/components/schemas/Gyldighetsperiode"
+          },
+          "konnektering": { "type": "boolean" },
+          "topologiniva": { "$ref": "#/components/schemas/Topologiniva" },
+          "maledato": { "type": "string", "format": "date" },
+          "malemetode": { "$ref": "#/components/schemas/Malemetode" },
+          "detaljniva": { "$ref": "#/components/schemas/Detaljniva" },
+          "typeVeg": { "$ref": "#/components/schemas/TypeVeg" },
+          "superstedfesting": {
+            "$ref": "#/components/schemas/StedfestingLinje"
+          },
+          "startnode": { "type": "integer", "format": "int64" },
+          "sluttnode": { "type": "integer", "format": "int64" },
+          "startposisjon": { "type": "number", "format": "double" },
+          "sluttposisjon": { "type": "number", "format": "double" },
+          "kommune": { "type": "integer", "format": "int32" },
+          "geometri": { "$ref": "#/components/schemas/Geometristruktur" },
+          "lengde": { "type": "number", "format": "double" },
+          "feltoversikt": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": [
+          "detaljniva",
+          "feltoversikt",
+          "geometri",
+          "gyldighetsperiode",
+          "kommune",
+          "konnektering",
+          "lengde",
+          "malemetode",
+          "sluttnode",
+          "sluttposisjon",
+          "startnode",
+          "startposisjon",
+          "topologiniva",
+          "typeVeg",
+          "veglenkenummer",
+          "veglenkesekvensId"
+        ]
+      },
+      "Node": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "format": "int64" },
+          "porter": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Nodeport" }
+          },
+          "gyldighetsperiode": {
+            "$ref": "#/components/schemas/Gyldighetsperiode"
+          },
+          "geometri": { "$ref": "#/components/schemas/Geometristruktur" },
+          "sistEndret": { "type": "string", "format": "date-time" }
+        },
+        "required": [
+          "geometri",
+          "gyldighetsperiode",
+          "id",
+          "porter",
+          "sistEndret"
+        ]
+      },
+      "Nodeport": {
+        "type": "object",
+        "properties": {
+          "nummer": { "type": "integer", "format": "int32" },
+          "veglenkesekvensId": { "type": "integer", "format": "int64" },
+          "veglenkesekvensPortNummer": { "type": "integer", "format": "int32" }
+        },
+        "required": ["nummer", "veglenkesekvensId", "veglenkesekvensPortNummer"]
+      },
+      "NoderSide": {
+        "type": "object",
+        "properties": {
+          "noder": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Node" }
+          },
+          "metadata": { "$ref": "#/components/schemas/SideMetadata" }
+        },
+        "required": ["metadata", "noder"]
+      },
+      "VegobjektHendelserSide": {
+        "type": "object",
+        "properties": {
+          "hendelser": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VegobjektNotifikasjon" }
+          },
+          "metadata": { "$ref": "#/components/schemas/SideMetadata" }
+        },
+        "required": ["hendelser", "metadata"]
+      },
+      "VegobjektNotifikasjon": {
+        "type": "object",
+        "properties": {
+          "hendelseId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unik id for hendelsen"
+          },
+          "hendelseType": {
+            "type": "string",
+            "description": "Navnet på hendelsestypen: VegobjektImportert, VegobjektVersjonOpprettet, VegobjektVersjonEndret eller VegobjektVersjonFjernet"
+          },
+          "vegobjektId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Id-en til vegobjektet som hendelsen gjelder"
+          },
+          "vegobjektTypeId": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Vegobjekttypeid-en til vegobjektet som hendelsen gjelder"
+          },
+          "vegobjektVersjon": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Versjon av vegobjektet som hendelsen gjelder. Versjonen er 0 når hendelsen er VegobjektImportert"
+          },
+          "tidspunkt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Tidspunktet hendelsen ble opprettet"
+          }
+        },
+        "required": [
+          "hendelseId",
+          "hendelseType",
+          "tidspunkt",
+          "vegobjektId",
+          "vegobjektTypeId",
+          "vegobjektVersjon"
+        ]
+      },
+      "RelasjonEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/RelasjonEndring" },
+          {
+            "type": "object",
+            "properties": {
+              "barnLagtTil": {
+                "type": "array",
+                "description": "Barn som er lagt til for relasjonstypen",
+                "items": { "$ref": "#/components/schemas/VegobjektId" },
+                "uniqueItems": true
+              },
+              "barnFjernet": {
+                "type": "array",
+                "description": "Barn som er fjernet for relasjonstypen",
+                "items": { "$ref": "#/components/schemas/VegobjektId" },
+                "uniqueItems": true
+              }
+            }
+          }
+        ],
+        "required": ["barnFjernet", "barnLagtTil"]
+      },
+      "RelasjonEndring": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "RelasjonFjernet": "#/components/schemas/RelasjonFjernet",
+            "RelasjonErstattet": "#/components/schemas/RelasjonErstattet",
+            "RelasjonEndret": "#/components/schemas/RelasjonEndret"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      },
+      "RelasjonErstattet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/RelasjonEndring" },
+          {
+            "type": "object",
+            "properties": {
+              "barn": {
+                "type": "array",
+                "description": "Relasjoner som er lagt til for relasjonstypen",
+                "items": { "$ref": "#/components/schemas/VegobjektId" },
+                "uniqueItems": true
+              }
+            }
+          }
+        ],
+        "required": ["barn"]
+      },
+      "RelasjonFjernet": {
+        "allOf": [{ "$ref": "#/components/schemas/RelasjonEndring" }]
+      },
+      "StedfestingEndring": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "StedfestingFjernet": "#/components/schemas/StedfestingFjernet",
+            "StedfestingErstattet": "#/components/schemas/StedfestingErstattet",
+            "StedfestingLinjerEndret": "#/components/schemas/StedfestingLinjerEndret",
+            "StedfestingPunkterEndret": "#/components/schemas/StedfestingPunkterEndret"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      },
+      "StedfestingErstattet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/StedfestingEndring" },
+          {
+            "type": "object",
+            "properties": {
+              "stedfesting": {
+                "$ref": "#/components/schemas/Stedfesting",
+                "description": "Ny stedfesting som erstatter den gamle"
+              }
+            }
+          }
+        ],
+        "required": ["stedfesting"]
+      },
+      "StedfestingFjernet": {
+        "allOf": [{ "$ref": "#/components/schemas/StedfestingEndring" }]
+      },
+      "StedfestingLinjerEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/StedfestingEndring" },
+          {
+            "type": "object",
+            "properties": {
+              "lagtTil": {
+                "type": "array",
+                "description": "Stedfestinglinjer som er lagt til",
+                "items": { "$ref": "#/components/schemas/StedfestingLinje" }
+              },
+              "fjernet": {
+                "type": "array",
+                "description": "Stedfestinglinjer som er fjernet",
+                "items": { "$ref": "#/components/schemas/StedfestingLinje" }
+              }
+            }
+          }
+        ],
+        "required": ["fjernet", "lagtTil"]
+      },
+      "StedfestingPunkterEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/StedfestingEndring" },
+          {
+            "type": "object",
+            "properties": {
+              "lagtTil": {
+                "type": "array",
+                "description": "Stedfestingpunkter som er lagt til",
+                "items": { "$ref": "#/components/schemas/StedfestingPunkt" },
+                "uniqueItems": true
+              },
+              "fjernet": {
+                "type": "array",
+                "description": "Stedfestingpunkter som er fjernet",
+                "items": { "$ref": "#/components/schemas/StedfestingPunkt" },
+                "uniqueItems": true
+              }
+            }
+          }
+        ],
+        "required": ["fjernet", "lagtTil"]
+      },
+      "VegobjektDeltaHendelse": {
+        "type": "object",
+        "properties": {
+          "hendelseId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unik id for hendelsen"
+          },
+          "vegobjektId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Id-en til vegobjektet som hendelsen gjelder"
+          },
+          "vegobjektType": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Vegobjekttypeid-en til vegobjektet som hendelsen gjelder"
+          },
+          "tidspunkt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Tidspunktet hendelsen ble opprettet"
+          },
+          "hendelseType": {
+            "type": "string",
+            "description": "Navnet på hendelsestypen: VegobjektImportert, VegobjektVersjonOpprettet, VegobjektVersjonEndret eller VegobjektVersjonSlettet"
+          },
+          "data": {
+            "$ref": "#/components/schemas/VegobjektHendelse",
+            "description": "Detaljer om hendelsen"
+          }
+        },
+        "required": [
+          "data",
+          "hendelseId",
+          "hendelseType",
+          "tidspunkt",
+          "vegobjektId",
+          "vegobjektType"
+        ]
+      },
+      "VegobjektHendelse": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "VegobjektVersjonOpprettet": "#/components/schemas/VegobjektVersjonOpprettet",
+            "VegobjektVersjonEndret": "#/components/schemas/VegobjektVersjonEndret",
+            "VegobjektVersjonFjernet": "#/components/schemas/VegobjektVersjonFjernet",
+            "VegobjektImportert": "#/components/schemas/VegobjektImportert"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      },
+      "VegobjektImportert": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegobjektHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "versjoner": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/VegobjektVersjon"
+                },
+                "description": "Innhold for alle versjoner av vegobjektet på tidspunktet for importen"
+              }
+            }
+          }
+        ],
+        "required": ["versjoner"]
+      },
+      "VegobjektVersjon": {
+        "type": "object",
+        "properties": {
+          "versjonId": { "type": "integer", "format": "int32" },
+          "gyldighetsperiode": {
+            "$ref": "#/components/schemas/Gyldighetsperiode"
+          },
+          "egenskaper": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/EgenskapVerdi"
+            }
+          },
+          "barn": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "$ref": "#/components/schemas/VegobjektId" },
+              "uniqueItems": true
+            }
+          },
+          "stedfesting": {
+            "$ref": "#/components/schemas/Stedfesting",
+            "description": "Utelatt dersom objektet ikke er stedfestet på vegnettet"
+          }
+        },
+        "required": ["barn", "egenskaper", "gyldighetsperiode", "versjonId"]
+      },
+      "VegobjektVersjonEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegobjektHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "gyldighetsperiode": {
+                "$ref": "#/components/schemas/Gyldighetsperiode",
+                "description": "Ny gyldighetsperiode. Tilstede dersom gyldighetsperiode er endret"
+              },
+              "egenskapEndringer": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/EgenskapVerdi"
+                },
+                "description": "Oppgir nye verdier for egenskaper som er endret"
+              },
+              "barnEndringer": {
+                "type": "object",
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/RelasjonEndring"
+                },
+                "description": "Beskriver hvilke relasjoner som er endret, erstattet, lagt til eller fjernet"
+              },
+              "stedfestingEndring": {
+                "$ref": "#/components/schemas/StedfestingEndring",
+                "description": "Tilstede dersom stedfesting er endret, erstattet, lagt til eller fjernet"
+              },
+              "versjonId": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Hvilken versjon av vegobjektet som er endret"
+              }
+            }
+          }
+        ],
+        "required": ["barnEndringer", "egenskapEndringer", "versjonId"]
+      },
+      "VegobjektVersjonFjernet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegobjektHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "versjonId": {
+                "type": "integer",
+                "format": "int32",
+                "description": "Hvilken versjon av vegobjektet som er fjernet"
+              }
+            }
+          }
+        ],
+        "required": ["versjonId"]
+      },
+      "VegobjektVersjonOpprettet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegobjektHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "versjon": {
+                "$ref": "#/components/schemas/VegobjektVersjon",
+                "description": "Innholdet til versjonen av vegobjektet som ble opprettet"
+              }
+            }
+          }
+        ],
+        "required": ["versjon"]
+      },
+      "VegnettHendelserSide": {
+        "type": "object",
+        "properties": {
+          "hendelser": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/VegnettNotifikasjon" }
+          },
+          "metadata": { "$ref": "#/components/schemas/SideMetadata" }
+        },
+        "required": ["hendelser", "metadata"]
+      },
+      "VegnettNotifikasjon": {
+        "type": "object",
+        "properties": {
+          "hendelseId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unik id for hendelsen"
+          },
+          "nettelementId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Id-en til nettelementet som hendelsen gjelder"
+          },
+          "nettelementType": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Nettelementtypeid-en til nettelementet som hendelsen gjelder"
+          },
+          "tidspunkt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Tidspunktet hendelsen ble opprettet"
+          },
+          "hendelseType": {
+            "type": "string",
+            "description": "Navnet på hendelsestypen: VeglenkesekvensOpprettet, VeglenkesekvensEndret, VeglenkesekvensFjernet, NodeOpprettet, NodeEndret, NodeFjernet"
+          }
+        },
+        "required": [
+          "hendelseId",
+          "hendelseType",
+          "nettelementId",
+          "nettelementType",
+          "tidspunkt"
+        ]
+      },
+      "NodeEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegnettHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "porterErstattet": {
+                "type": "array",
+                "description": "Liste med informasjon om portene som denne noden er tilkoblet (erstatter eksisterende porter)",
+                "items": { "$ref": "#/components/schemas/Nodeport" },
+                "uniqueItems": true
+              },
+              "porterFjernet": {
+                "type": "array",
+                "description": "Liste med id-er for porter som er fjernet",
+                "items": { "type": "integer", "format": "int32" },
+                "uniqueItems": true
+              },
+              "gyldighetsperiode": {
+                "$ref": "#/components/schemas/Gyldighetsperiode",
+                "description": "Utelatt dersom gyldighetsperiode ikke er endret"
+              },
+              "geometri": {
+                "$ref": "#/components/schemas/Geometristruktur",
+                "description": "Utelatt dersom geometrien ikke er endret"
+              }
+            }
+          }
+        ],
+        "required": ["porterErstattet", "porterFjernet"]
+      },
+      "NodeFjernet": {
+        "allOf": [{ "$ref": "#/components/schemas/VegnettHendelse" }]
+      },
+      "NodeOpprettet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegnettHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "porter": {
+                "type": "array",
+                "description": "Liste med informasjon om portene som denne noden er tilkoblet",
+                "items": { "$ref": "#/components/schemas/Nodeport" },
+                "uniqueItems": true
+              },
+              "geometri": { "$ref": "#/components/schemas/Geometristruktur" },
+              "gyldighetsperiode": {
+                "$ref": "#/components/schemas/Gyldighetsperiode"
+              }
+            }
+          }
+        ],
+        "required": ["geometri", "gyldighetsperiode", "porter"]
+      },
+      "VeglenkesekvensEndret": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegnettHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "porterErstattet": {
+                "type": "array",
+                "description": "Liste med informasjon om portene som denne veglenkesekvensen er tilkoblet (erstatter eksisterende porter)",
+                "items": { "$ref": "#/components/schemas/Veglenkesekvensport" },
+                "uniqueItems": true
+              },
+              "porterFjernet": {
+                "type": "array",
+                "description": "Liste med id-er for porter som er fjernet",
+                "items": { "type": "integer", "format": "int32" },
+                "uniqueItems": true
+              },
+              "veglenkerErstattet": {
+                "type": "array",
+                "description": "Liste med informasjon om veglenkene som veglenkesekvensen består av (erstatter eksisterende veglenker)",
+                "items": { "$ref": "#/components/schemas/Veglenke" },
+                "uniqueItems": true
+              },
+              "veglenkerFjernet": {
+                "type": "array",
+                "description": "Liste med id-er for veglenker som er fjernet",
+                "items": { "type": "integer", "format": "int32" },
+                "uniqueItems": true
+              },
+              "lengde": {
+                "type": "number",
+                "format": "double",
+                "description": "Lengden på veglenkesekvensen i meter"
+              },
+              "lastLengde": { "type": "boolean" }
+            }
+          }
+        ],
+        "required": [
+          "porterErstattet",
+          "porterFjernet",
+          "veglenkerErstattet",
+          "veglenkerFjernet"
+        ]
+      },
+      "VeglenkesekvensFjernet": {
+        "allOf": [{ "$ref": "#/components/schemas/VegnettHendelse" }]
+      },
+      "VeglenkesekvensOpprettet": {
+        "allOf": [
+          { "$ref": "#/components/schemas/VegnettHendelse" },
+          {
+            "type": "object",
+            "properties": {
+              "porter": {
+                "type": "array",
+                "description": "Liste med informasjon om portene som denne veglenkesekvensen er tilkoblet",
+                "items": { "$ref": "#/components/schemas/Veglenkesekvensport" },
+                "uniqueItems": true
+              },
+              "veglenker": {
+                "type": "array",
+                "description": "Liste med informasjon om veglenkene som veglenkesekvensen består av",
+                "items": { "$ref": "#/components/schemas/Veglenke" },
+                "uniqueItems": true
+              },
+              "lengde": {
+                "type": "number",
+                "format": "double",
+                "description": "Lengden på veglenkesekvensen i meter"
+              },
+              "lastLengde": { "type": "boolean" }
+            }
+          }
+        ],
+        "required": ["lastLengde", "lengde", "porter", "veglenker"]
+      },
+      "VegnettDeltaHendelse": {
+        "type": "object",
+        "properties": {
+          "hendelseId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unik id for hendelsen"
+          },
+          "nettelementId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Id-en til nettelementet som hendelsen gjelder"
+          },
+          "nettelementType": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Nettelementtypeid-en til nettelementet som hendelsen gjelder"
+          },
+          "tidspunkt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Tidspunktet hendelsen ble opprettet"
+          },
+          "hendelseType": {
+            "type": "string",
+            "description": "Navnet på hendelsestypen: VeglenkesekvensOpprettet, VeglenkesekvensEndret, VeglenkesekvensFjernet, NodeOpprettet, NodeEndret, NodeFjernet"
+          },
+          "data": {
+            "$ref": "#/components/schemas/VegnettHendelse",
+            "description": "Detaljer om hendelsen"
+          }
+        },
+        "required": [
+          "data",
+          "hendelseId",
+          "hendelseType",
+          "nettelementId",
+          "nettelementType",
+          "tidspunkt"
+        ]
+      },
+      "VegnettHendelse": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "VeglenkesekvensOpprettet": "#/components/schemas/VeglenkesekvensOpprettet",
+            "VeglenkesekvensEndret": "#/components/schemas/VeglenkesekvensEndret",
+            "VeglenkesekvensFjernet": "#/components/schemas/VeglenkesekvensFjernet",
+            "NodeOpprettet": "#/components/schemas/NodeOpprettet",
+            "NodeEndret": "#/components/schemas/NodeEndret",
+            "NodeFjernet": "#/components/schemas/NodeFjernet"
+          }
+        },
+        "properties": { "type": { "type": "string" } },
+        "required": ["type"]
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "oauth2",
+        "name": "bearerAuth",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://www.vegvesen.no:443/openam/oauth2/realms/root/realms/Employees/authorize",
+            "tokenUrl": "https://www.vegvesen.no:443/openam/oauth2/realms/root/realms/Employees/access_token",
+            "scopes": { "openid": "Open ID", "svvprofile": "SVV profile" }
+          }
+        }
+      }
+    }
+  }
+}
