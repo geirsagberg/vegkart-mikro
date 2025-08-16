@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { MapRef } from '../components/Map'
 import { VegkartMap } from '../components/Map'
 import { getSyncProgress, startSync, stopSync } from '../db/sync'
+import { logger } from '~/utils/logger'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -54,7 +55,7 @@ function Home() {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch sync progress:', error)
+      logger.error('Failed to fetch sync progress:', error)
     }
   }, [])
 
@@ -103,7 +104,7 @@ function Home() {
     try {
       await mapRef.current.drawVeglenkerInView()
     } catch (error) {
-      console.error('Failed to draw veglenker:', error)
+      logger.error('Failed to draw veglenker:', error)
       setError(error instanceof Error ? error.message : 'Unknown error')
     } finally {
       setIsLoading(false)

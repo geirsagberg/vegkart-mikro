@@ -8,6 +8,7 @@ import Select from 'ol/interaction/Select'
 import TileLayer from 'ol/layer/Tile'
 import VectorLayer from 'ol/layer/Vector'
 import { get as getProjection, transform } from 'ol/proj'
+import { logger } from '~/utils/logger'
 import { register } from 'ol/proj/proj4'
 import Cluster from 'ol/source/Cluster'
 import OSM from 'ol/source/OSM'
@@ -162,7 +163,7 @@ export const VegkartMap = forwardRef<MapRef>((_, ref) => {
           lineStringSource.current.addFeatures(features)
         }
       } catch (error) {
-        console.error('Error loading veglenker:', error)
+        logger.error('Error loading veglenker:', error)
         throw error
       }
     },

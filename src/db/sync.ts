@@ -1,5 +1,6 @@
 import { DuckDBInstance } from '@duckdb/node-api'
 import { createServerFn } from '@tanstack/react-start'
+import { logger } from '~/utils/logger'
 
 const NVDB_STREAM_URL =
   'https://nvdbapiles.atlas.vegvesen.no/uberiket/api/v1/vegnett/veglenker/stream'
@@ -130,8 +131,19 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
         'INSTALL httpfs; LOAD httpfs; INSTALL spatial; LOAD spatial;',
       )
 
+      // Enable DuckDB logging if configured
+      if (process.env.ENABLE_LOGGING === 'true') {
+        await connection.run(`
+          PRAGMA enable_logging;
+          SET logging_level='TRACE';
+          SET logging_storage = 'stdout';
+        `)
+      }
+
       while (syncStatus.isRunning) {
         const url = `${NVDB_STREAM_URL}?start=${syncStatus.currentId}-${syncStatus.lastVeglenkenummer}&antall=${BATCH_SIZE}`
+
+        logger.log('Fetching data from:', url)
 
         // Check if table exists
         const tableExists = await connection.runAndReadAll(`
@@ -179,7 +191,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
               sluttposisjon = EXCLUDED.sluttposisjon,
               startdato = EXCLUDED.startdato,
               sluttdato = EXCLUDED.sluttdato,
-              geometri = ST_GeomFromText(EXCLUDED.geometri.wkt),
+              geometri = EXCLUDED.geometri,
               kommune = EXCLUDED.kommune,
               lengde = EXCLUDED.lengde
           `)
@@ -221,7 +233,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
         }
       }
     } catch (error: unknown) {
-      console.error('Sync failed:', error)
+      logger.error('Sync failed:', error)
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error'
 
