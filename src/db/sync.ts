@@ -18,6 +18,7 @@ interface SyncProgress {
   currentId: number
   lastVeglenkenummer: number
   batchCount: number
+  totalVeglenker: number
   isComplete: boolean
   error: string | null
   completionMessage: string | null
@@ -28,6 +29,7 @@ interface SyncStatus {
   currentId: number
   lastVeglenkenummer: number
   batchCount: number
+  totalVeglenker: number
   error: string | null
   completionMessage: string | null
 }
@@ -37,6 +39,7 @@ let syncStatus: SyncStatus = {
   currentId: 0,
   lastVeglenkenummer: 0,
   batchCount: 0,
+  totalVeglenker: 0,
   error: null,
   completionMessage: null,
 }
@@ -109,6 +112,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
       currentId: 0,
       lastVeglenkenummer: 0,
       batchCount: 0,
+      totalVeglenker: 0,
       error: null,
       completionMessage: null,
     }
@@ -128,7 +132,7 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
 
       // Enable httpfs extension
       await connection.run(
-        'INSTALL httpfs; LOAD httpfs; INSTALL spatial; LOAD spatial;',
+        'INSTALL httpfs; LOAD httpfs; INSTALL spatial; LOAD spatial; SET force_download=true;',
       )
 
       // Enable DuckDB logging if configured
@@ -227,6 +231,13 @@ export const startSync = createServerFn({ method: 'POST' }).handler(
             syncStatus.lastVeglenkenummer,
           )
 
+          // Get total count of veglenker
+          const totalResult = await connection.runAndReadAll(
+            'SELECT COUNT(*) as total FROM veglenker',
+          )
+          const totalRows = totalResult.getRowObjects()
+          syncStatus.totalVeglenker = Number(totalRows[0]?.total) || 0
+
           syncStatus.batchCount++
         } else {
           syncStatus.isRunning = false
@@ -264,6 +275,7 @@ export const getSyncProgress = createServerFn({ method: 'GET' }).handler(
       currentId: syncStatus.currentId,
       lastVeglenkenummer: syncStatus.lastVeglenkenummer,
       batchCount: syncStatus.batchCount,
+      totalVeglenker: syncStatus.totalVeglenker,
       isComplete: !syncStatus.isRunning,
       error: syncStatus.error,
       completionMessage: syncStatus.completionMessage,

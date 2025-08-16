@@ -20,6 +20,7 @@ interface SyncProgress {
   currentId: number
   lastVeglenkenummer: number
   batchCount: number
+  totalVeglenker: number
   isComplete: boolean
   error: string | null
   completionMessage: string | null
@@ -127,6 +128,9 @@ function Home() {
                   <span className="ml-2 badge badge-sm">
                     Batch {syncProgress.batchCount}
                   </span>
+                  <span className="ml-2 badge badge-sm badge-info">
+                    {syncProgress.totalVeglenker.toLocaleString()} total
+                  </span>
                 </>
               ) : (
                 <>
@@ -134,6 +138,9 @@ function Home() {
                   {syncProgress.lastVeglenkenummer}
                   <span className="ml-2 badge badge-sm badge-success">
                     {syncProgress.batchCount} batches
+                  </span>
+                  <span className="ml-2 badge badge-sm badge-info">
+                    {syncProgress.totalVeglenker.toLocaleString()} total
                   </span>
                 </>
               )}
