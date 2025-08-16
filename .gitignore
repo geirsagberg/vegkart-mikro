@@ -37,6 +37,8 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Build output
 .build
 .vinxi
+.tanstack
+.nitro
 
 # Environment variables
 .env
