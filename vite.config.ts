@@ -22,6 +22,6 @@ export default defineConfig({
     exclude: ['@duckdb/node-api', '@duckdb/node-bindings'],
   },
   ssr: {
-    noExternal: ['@duckdb/node-api'],
+    external: ['@duckdb/node-api', '@duckdb/node-bindings'],
   },
 })
