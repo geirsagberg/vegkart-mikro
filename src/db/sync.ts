@@ -2,7 +2,7 @@ import { DuckDBInstance } from '@duckdb/node-api'
 import { createServerFn } from '@tanstack/react-start'
 
 const NVDB_STREAM_URL =
-  'https://nvdbapiles.test.atlas.vegvesen.no/uberiket/api/v1/vegnett/veglenker/stream'
+  'https://nvdbapiles.atlas.vegvesen.no/uberiket/api/v1/vegnett/veglenker/stream'
 
 const BATCH_SIZE = 10000
 
